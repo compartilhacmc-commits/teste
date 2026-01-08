@@ -1,485 +1,530 @@
-// Configuração e Dados
+// ===================================
+// CONFIGURAÇÃO DA PLANILHA
+// ===================================
 const SHEET_ID = '1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4';
-const SHEET_NAME = 'pendencias eldorado';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+const SHEET_NAME = 'PENDÊNCIAS ELDORADO';
+// URL corrigida com encoding do nome da aba
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-let dadosOriginais = [];
-let dadosFiltrados = [];
-let paginaAtual = 1;
-const itensPorPagina = 15;
+// ===================================
+// VARIÁVEIS GLOBAIS
+// ===================================
+let allData = [];
+let filteredData = [];
+let chartUnidades = null;
+let chartEspecialidades = null;
 
-// Variáveis para gráficos
-let chartUnidades, chartEspecialidades, chartVencimento15, chartVencimento30;
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', async () => {
-    await carregarDados();
-    inicializarEventos();
-    configurarFiltrosCustomizados();
+// ===================================
+// INICIALIZAÇÃO
+// ===================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Iniciando carregamento de dados...');
+    loadData();
 });
 
-// Carregar dados do Google Sheets
-async function carregarDados() {
+// ===================================
+// CARREGAR DADOS DA PLANILHA
+// ===================================
+async function loadData() {
+    showLoading(true);
     try {
+        console.log('Fazendo requisição para:', SHEET_URL);
+        
         const response = await fetch(SHEET_URL);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
         
-        dadosOriginais = json.table.rows.slice(2).map(row => {
-            const cells = row.c;
-            return {
-                numeroSolicitacao: cells[0]?.v || '',
-                dataSolicitacao: cells[1]?.f || '',
-                prontuario: cells[2]?.v || '',
-                usuario: cells[3]?.v || '',
-                cns: cells[4]?.v || '',
-                nascimento: cells[5]?.f || '',
-                telefone: cells[6]?.v || '',
-                urgencia: cells[7]?.v || '',
-                tipoServico: cells[8]?.v || '',
-                unidadeSolicitante: cells[9]?.v || '',
-                prestador: cells[10]?.v || '',
-                cboEspecialidade: cells[11]?.v || '',
-                dataInicioPendencia: cells[12]?.f || '',
-                prazo15: cells[13]?.v || '',
-                dataFinal15: cells[14]?.f || '',
-                dataEnvioEmail15: cells[15]?.f || '',
-                prazo30: cells[16]?.v || '',
-                dataFinal30: cells[17]?.f || '',
-                dataEnvioEmail30: cells[18]?.f || '',
-                status: cells[19]?.v || '',
-                motivoPendencia: cells[20]?.v || '',
-                respostaPendencia: cells[21]?.v || '',
-                observacao: cells[22]?.v || ''
-            };
-        }).filter(item => item.numeroSolicitacao);
-
-        dadosFiltrados = [...dadosOriginais];
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
         
-        // Preencher opções dos filtros
-        preencherOpcoesSelect('ubsOptions', [...new Set(dadosOriginais.map(d => d.unidadeSolicitante))].filter(Boolean).sort());
-        preencherOpcoesSelect('prestadorOptions', [...new Set(dadosOriginais.map(d => d.prestador))].filter(Boolean).sort());
-        preencherOpcoesSelect('especialidadeOptions', [...new Set(dadosOriginais.map(d => d.cboEspecialidade))].filter(Boolean).sort());
-        preencherOpcoesSelect('motivoOptions', [...new Set(dadosOriginais.map(d => d.motivoPendencia))].filter(Boolean).sort());
+        const csvText = await response.text();
+        console.log('Dados CSV recebidos, primeiros 500 caracteres:', csvText.substring(0, 500));
         
-        atualizarDashboard();
+        // Parse CSV
+        const rows = parseCSV(csvText);
+        
+        if (rows.length < 2) {
+            throw new Error('Planilha vazia ou sem dados');
+        }
+        
+        // Cabeçalhos (primeira linha)
+        const headers = rows[0];
+        console.log('Cabeçalhos encontrados:', headers);
+        
+        // Converter linhas em objetos
+        allData = rows.slice(1)
+            .filter(row => row.length > 1 && row[0]) // Filtrar linhas vazias
+            .map(row => {
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header.trim()] = (row[index] || '').trim();
+                });
+                return obj;
+            });
+        
+        console.log(`Total de registros carregados: ${allData.length}`);
+        console.log('Primeiro registro:', allData[0]);
+        
+        filteredData = [...allData];
+        
+        // Inicializar interface
+        populateFilters();
+        updateDashboard();
+        
+        console.log('Dados carregados com sucesso!');
+        
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar dados da planilha. Verifique a conexão e permissões.');
+        alert(`Erro ao carregar dados da planilha: ${error.message}\n\nVerifique:\n1. A planilha está pública?\n2. O nome da aba está correto: "${SHEET_NAME}"?\n3. Há dados na planilha?`);
+    } finally {
+        showLoading(false);
     }
 }
 
-// Preencher opções de select
-function preencherOpcoesSelect(containerId, opcoes) {
-    const container = document.getElementById(containerId);
-    opcoes.forEach(opcao => {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" value="${opcao}"> ${opcao}`;
-        container.appendChild(label);
-    });
+// ===================================
+// PARSE CSV (COM SUPORTE A ASPAS)
+// ===================================
+function parseCSV(text) {
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+        
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                // Aspas duplas dentro de aspas
+                currentCell += '"';
+                i++; // Pular próxima aspa
+            } else {
+                // Alternar estado de aspas
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            // Fim de célula
+            currentRow.push(currentCell.trim());
+            currentCell = '';
+        } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+            // Fim de linha
+            if (currentCell || currentRow.length > 0) {
+                currentRow.push(currentCell.trim());
+                rows.push(currentRow);
+                currentRow = [];
+                currentCell = '';
+            }
+            // Pular \r\n
+            if (char === '\r' && nextChar === '\n') {
+                i++;
+            }
+        } else {
+            currentCell += char;
+        }
+    }
+    
+    // Adicionar última célula e linha
+    if (currentCell || currentRow.length > 0) {
+        currentRow.push(currentCell.trim());
+        rows.push(currentRow);
+    }
+    
+    return rows;
 }
 
-// Configurar filtros customizados
-function configurarFiltrosCustomizados() {
-    const selects = document.querySelectorAll('.custom-select');
-    
-    selects.forEach(select => {
-        const trigger = select.querySelector('.select-trigger');
-        const dropdown = select.querySelector('.select-dropdown');
-        
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Fechar outros dropdowns
-            document.querySelectorAll('.select-dropdown').forEach(d => {
-                if (d !== dropdown) d.classList.remove('active');
-            });
-            dropdown.classList.toggle('active');
-        });
-        
-        // Atualizar texto do trigger
-        const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                atualizarTextoSelect(select);
-                aplicarFiltros();
-            });
-        });
-    });
-    
-    // Fechar dropdowns ao clicar fora
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('active'));
-    });
-}
-
-// Atualizar texto do select
-function atualizarTextoSelect(select) {
-    const trigger = select.querySelector('.select-trigger span');
-    const checkboxes = select.querySelectorAll('input[type="checkbox"]:checked');
-    const todosCheckbox = select.querySelector('input[value="Todos"], input[value="Todas"], input[value="Todas as demandas"]');
-    
-    if (checkboxes.length === 0 || (checkboxes.length === 1 && checkboxes[0] === todosCheckbox)) {
-        trigger.textContent = todosCheckbox ? todosCheckbox.value : 'Selecione';
+// ===================================
+// MOSTRAR/OCULTAR LOADING
+// ===================================
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (show) {
+        overlay.classList.add('active');
     } else {
-        const valores = Array.from(checkboxes)
-            .filter(cb => cb !== todosCheckbox)
-            .map(cb => cb.value);
-        trigger.textContent = valores.length > 2 
-            ? `${valores.length} selecionados` 
-            : valores.join(', ');
+        overlay.classList.remove('active');
     }
 }
 
-// Aplicar filtros
-function aplicarFiltros() {
-    dadosFiltrados = dadosOriginais.filter(item => {
-        // Filtro Status
-        const statusSelecionados = obterValoresSelecionados('selectStatus');
-        if (!statusSelecionados.includes('Todos') && !statusSelecionados.includes(item.status)) {
-            return false;
-        }
-        
-        // Filtro UBS
-        const ubsSelecionadas = obterValoresSelecionados('selectUBS');
-        if (!ubsSelecionadas.includes('Todas') && !ubsSelecionadas.includes(item.unidadeSolicitante)) {
-            return false;
-        }
-        
-        // Filtro Prestador
-        const prestadoresSelecionados = obterValoresSelecionados('selectPrestador');
-        if (!prestadoresSelecionados.includes('Todos') && !prestadoresSelecionados.includes(item.prestador)) {
-            return false;
-        }
-        
-        // Filtro Especialidade
-        const especialidadesSelecionadas = obterValoresSelecionados('selectEspecialidade');
-        if (!especialidadesSelecionadas.includes('Todas') && !especialidadesSelecionadas.includes(item.cboEspecialidade)) {
-            return false;
-        }
-        
-        // Filtro Motivo
-        const motivosSelecionados = obterValoresSelecionados('selectMotivo');
-        if (!motivosSelecionados.includes('Todas') && !motivosSelecionados.includes('Todas as demandas') && !motivosSelecionados.includes(item.motivoPendencia)) {
-            return false;
-        }
-        
-        return true;
+// ===================================
+// POPULAR FILTROS
+// ===================================
+function populateFilters() {
+    // Status
+    const statusList = [...new Set(allData.map(item => item['Status']))].filter(Boolean).sort();
+    const selectStatus = document.getElementById('filterStatus');
+    selectStatus.innerHTML = '<option value="">Todos</option>';
+    statusList.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        selectStatus.appendChild(option);
     });
     
-    paginaAtual = 1;
-    atualizarDashboard();
+    // Unidades
+    const unidades = [...new Set(allData.map(item => item['Unidade Solicitante']))].filter(Boolean).sort();
+    const selectUnidade = document.getElementById('filterUnidade');
+    selectUnidade.innerHTML = '<option value="">Todas</option>';
+    unidades.forEach(unidade => {
+        const option = document.createElement('option');
+        option.value = unidade;
+        option.textContent = unidade;
+        selectUnidade.appendChild(option);
+    });
+    
+    // Especialidades
+    const especialidades = [...new Set(allData.map(item => item['Cbo Especialidade']))].filter(Boolean).sort();
+    const selectEspecialidade = document.getElementById('filterEspecialidade');
+    selectEspecialidade.innerHTML = '<option value="">Todas</option>';
+    especialidades.forEach(especialidade => {
+        const option = document.createElement('option');
+        option.value = especialidade;
+        option.textContent = especialidade;
+        selectEspecialidade.appendChild(option);
+    });
+    
+    // Prestador (NOVO FILTRO)
+    const prestadores = [...new Set(allData.map(item => item['Prestador']))].filter(Boolean).sort();
+    const selectPrestador = document.getElementById('filterPrestador');
+    selectPrestador.innerHTML = '<option value="">Todos</option>';
+    prestadores.forEach(prestador => {
+        const option = document.createElement('option');
+        option.value = prestador;
+        option.textContent = prestador;
+        selectPrestador.appendChild(option);
+    });
 }
 
-// Obter valores selecionados de um select
-function obterValoresSelecionados(selectId) {
-    const select = document.getElementById(selectId);
-    const checkboxes = select.querySelectorAll('input[type="checkbox"]:checked');
-    return Array.from(checkboxes).map(cb => cb.value);
+// ===================================
+// APLICAR FILTROS
+// ===================================
+function applyFilters() {
+    const status = document.getElementById('filterStatus').value;
+    const unidade = document.getElementById('filterUnidade').value;
+    const especialidade = document.getElementById('filterEspecialidade').value;
+    const prestador = document.getElementById('filterPrestador').value;
+    
+    filteredData = allData.filter(item => {
+        return (!status || item['Status'] === status) &&
+               (!unidade || item['Unidade Solicitante'] === unidade) &&
+               (!especialidade || item['Cbo Especialidade'] === especialidade) &&
+               (!prestador || item['Prestador'] === prestador);
+    });
+    
+    updateDashboard();
 }
 
-// Calcular pendências vencendo
-function calcularVencimentos(dados, dias) {
+// ===================================
+// LIMPAR FILTROS
+// ===================================
+function clearFilters() {
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterUnidade').value = '';
+    document.getElementById('filterEspecialidade').value = '';
+    document.getElementById('filterPrestador').value = '';
+    
+    filteredData = [...allData];
+    updateDashboard();
+}
+
+// ===================================
+// ATUALIZAR DASHBOARD
+// ===================================
+function updateDashboard() {
+    updateCards();
+    updateCharts();
+    updateTable();
+}
+
+// ===================================
+// ATUALIZAR CARDS
+// ===================================
+function updateCards() {
+    const total = allData.length;
+    const filtrado = filteredData.length;
+    
+    // Calcular pendências por prazo
     const hoje = new Date();
-    const dataLimite = new Date();
-    dataLimite.setDate(hoje.getDate() + dias);
+    let pendencias15 = 0;
+    let pendencias30 = 0;
     
-    return dados.filter(item => {
-        if (!item.dataInicioPendencia) return false;
-        const dataInicio = parseDate(item.dataInicioPendencia);
-        if (!dataInicio) return false;
-        
-        const dataVencimento = new Date(dataInicio);
-        dataVencimento.setDate(dataInicio.getDate() + dias);
-        
-        return dataVencimento <= dataLimite && dataVencimento >= hoje;
-    }).length;
-}
-
-// Parsear data
-function parseDate(dateStr) {
-    try {
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-            return new Date(parts[2], parts[1] - 1, parts[0]);
+    filteredData.forEach(item => {
+        const dataInicio = parseDate(item['Data Início da Pendência']);
+        if (dataInicio) {
+            const diasDecorridos = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
+            
+            if (diasDecorridos >= 15 && diasDecorridos < 30) {
+                pendencias15++;
+            }
+            if (diasDecorridos >= 30) {
+                pendencias30++;
+            }
         }
-        return new Date(dateStr);
-    } catch {
-        return null;
-    }
-}
-
-// Atualizar Dashboard
-function atualizarDashboard() {
-    atualizarCards();
-    atualizarGraficos();
-    atualizarTabela();
-}
-
-// Atualizar Cards
-function atualizarCards() {
-    const total = dadosFiltrados.length;
-    const vencendo15 = calcularVencimentos(dadosFiltrados, 15);
-    const vencendo30 = calcularVencimentos(dadosFiltrados, 30);
-    const porcentagem = dadosOriginais.length > 0 
-        ? ((total / dadosOriginais.length) * 100).toFixed(1) 
-        : 0;
-    
-    document.getElementById('totalPendencias').textContent = total;
-    document.getElementById('vencendo15').textContent = vencendo15;
-    document.getElementById('vencendo30').textContent = vencendo30;
-    document.getElementById('porcentagem').textContent = porcentagem + '%';
-}
-
-// Atualizar Gráficos
-function atualizarGraficos() {
-    // Gráfico de Unidades
-    const unidades = {};
-    dadosFiltrados.forEach(item => {
-        const unidade = item.unidadeSolicitante || 'Não informado';
-        unidades[unidade] = (unidades[unidade] || 0) + 1;
     });
     
-    const unidadesOrdenadas = Object.entries(unidades)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
+    // Atualizar valores dos cards
+    document.getElementById('totalPendencias').textContent = total;
+    document.getElementById('pendencias15').textContent = pendencias15;
+    document.getElementById('pendencias30').textContent = pendencias30;
     
-    criarGraficoBarras(
-        'chartUnidades',
-        unidadesOrdenadas.map(u => u[0]),
-        unidadesOrdenadas.map(u => u[1]),
-        'rgba(54, 162, 235, 0.8)',
-        chartUnidades
-    );
+    const percentFiltrados = total > 0 ? ((filtrado / total) * 100).toFixed(1) : '100.0';
+    document.getElementById('percentFiltrados').textContent = percentFiltrados + '%';
+}
+
+// ===================================
+// ATUALIZAR GRÁFICOS
+// ===================================
+function updateCharts() {
+    // Gráfico de Unidades
+    const unidadesCount = {};
+    filteredData.forEach(item => {
+        const unidade = item['Unidade Solicitante'] || 'Não informado';
+        unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
+    });
+    
+    // Ordenar e pegar top 10
+    const unidadesLabels = Object.keys(unidadesCount)
+        .sort((a, b) => unidadesCount[b] - unidadesCount[a])
+        .slice(0, 10);
+    const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
+    
+    createBarChart('chartUnidades', unidadesLabels, unidadesValues, '#2563eb');
     
     // Gráfico de Especialidades
-    const especialidades = {};
-    dadosFiltrados.forEach(item => {
-        const esp = item.cboEspecialidade || 'Não informado';
-        especialidades[esp] = (especialidades[esp] || 0) + 1;
+    const especialidadesCount = {};
+    filteredData.forEach(item => {
+        const especialidade = item['Cbo Especialidade'] || 'Não informado';
+        especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
     });
     
-    const especialidadesOrdenadas = Object.entries(especialidades)
-        .sort((a, b) => b[1] - a[1])
+    // Ordenar e pegar top 10
+    const especialidadesLabels = Object.keys(especialidadesCount)
+        .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
         .slice(0, 10);
+    const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
     
-    criarGraficoBarras(
-        'chartEspecialidades',
-        especialidadesOrdenadas.map(e => e[0]),
-        especialidadesOrdenadas.map(e => e[1]),
-        'rgba(75, 192, 192, 0.8)',
-        chartEspecialidades
-    );
-    
-    // Gráfico Vencimento 15 dias
-    const vencimento15Unidades = {};
-    dadosFiltrados.forEach(item => {
-        if (calcularVencimentos([item], 15) > 0) {
-            const unidade = item.unidadeSolicitante || 'Não informado';
-            vencimento15Unidades[unidade] = (vencimento15Unidades[unidade] || 0) + 1;
-        }
-    });
-    
-    const venc15Ordenado = Object.entries(vencimento15Unidades)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-    
-    criarGraficoBarras(
-        'chartVencimento15',
-        venc15Ordenado.map(v => v[0]),
-        venc15Ordenado.map(v => v[1]),
-        'rgba(255, 159, 64, 0.8)',
-        chartVencimento15
-    );
-    
-    // Gráfico Vencimento 30 dias
-    const vencimento30Unidades = {};
-    dadosFiltrados.forEach(item => {
-        if (calcularVencimentos([item], 30) > 0) {
-            const unidade = item.unidadeSolicitante || 'Não informado';
-            vencimento30Unidades[unidade] = (vencimento30Unidades[unidade] || 0) + 1;
-        }
-    });
-    
-    const venc30Ordenado = Object.entries(vencimento30Unidades)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-    
-    criarGraficoBarras(
-        'chartVencimento30',
-        venc30Ordenado.map(v => v[0]),
-        venc30Ordenado.map(v => v[1]),
-        'rgba(255, 99, 132, 0.8)',
-        chartVencimento30
-    );
+    createBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#10b981');
 }
 
-// Criar gráfico de barras
-function criarGraficoBarras(canvasId, labels, data, backgroundColor, chartInstance) {
+// ===================================
+// CRIAR GRÁFICO DE BARRAS
+// ===================================
+function createBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
     
-    if (chartInstance) {
-        chartInstance.destroy();
+    // Destruir gráfico anterior
+    if (canvasId === 'chartUnidades' && chartUnidades) {
+        chartUnidades.destroy();
+    } else if (canvasId === 'chartEspecialidades' && chartEspecialidades) {
+        chartEspecialidades.destroy();
     }
     
-    chartInstance = new Chart(ctx, {
+    // Criar novo gráfico
+    const newChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Quantidade',
                 data: data,
-                backgroundColor: backgroundColor,
+                backgroundColor: color,
+                borderColor: color,
+                borderWidth: 0,
                 borderRadius: 8,
-                barThickness: 40
+                barThickness: 'flex',
+                maxBarThickness: 50
             }]
         },
         options: {
-            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
                 },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    cornerRadius: 8,
+                    displayColors: false
+                },
                 datalabels: {
-                    color: 'white',
+                    anchor: 'end',
+                    align: 'end',
+                    color: '#1f2937',
                     font: {
                         weight: 'bold',
-                        size: 14
+                        size: 12
                     },
-                    anchor: 'center',
-                    align: 'center',
                     formatter: (value) => value
                 }
             },
             scales: {
-                x: {
+                y: {
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 1
+                        font: { size: 12 },
+                        color: '#6b7280',
+                        precision: 0
+                    },
+                    grid: {
+                        color: '#e5e7eb',
+                        drawBorder: false
                     }
                 },
-                y: {
+                x: {
                     ticks: {
-                        autoSkip: false
+                        font: { size: 11 },
+                        color: '#6b7280',
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
                     }
                 }
             }
-        }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach(function(dataset, i) {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden) {
+                        meta.data.forEach(function(element, index) {
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 14px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            const dataString = dataset.data[index].toString();
+                            const padding = 5;
+                            ctx.fillText(dataString, element.x, element.y - padding);
+                        });
+                    }
+                });
+            }
+        }]
     });
     
-    // Ajustar altura do canvas
-    ctx.style.height = `${Math.max(300, labels.length * 50)}px`;
-    
-    return chartInstance;
+    // Salvar referência
+    if (canvasId === 'chartUnidades') {
+        chartUnidades = newChart;
+    } else if (canvasId === 'chartEspecialidades') {
+        chartEspecialidades = newChart;
+    }
 }
 
-// Atualizar Tabela
-function atualizarTabela() {
-    const tbody = document.getElementById('tabelaBody');
-    const inicio = (paginaAtual - 1) * itensPorPagina;
-    const fim = inicio + itensPorPagina;
-    const dadosPagina = dadosFiltrados.slice(inicio, fim);
-    
+// ===================================
+// ATUALIZAR TABELA
+// ===================================
+function updateTable() {
+    const tbody = document.getElementById('tableBody');
+    const footer = document.getElementById('tableFooter');
     tbody.innerHTML = '';
     
-    dadosPagina.forEach(item => {
-        const tr = document.createElement('tr');
-        
-        const statusClass = item.status.toLowerCase().replace(/\s+/g, '-');
-        
-        tr.innerHTML = `
-            <td>${item.numeroSolicitacao}</td>
-            <td>${item.dataSolicitacao}</td>
-            <td>${item.prontuario}</td>
-            <td>${item.telefone}</td>
-            <td>${item.unidadeSolicitante}</td>
-            <td>${item.cboEspecialidade}</td>
-            <td>${item.dataInicioPendencia}</td>
-            <td><span class="status-badge status-${statusClass}">${item.status}</span></td>
-            <td>${item.observacao}</td>
+    if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
+        footer.textContent = 'Mostrando 0 registros';
+        return;
+    }
+    
+    filteredData.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item['N° Solicitação'] || item['Número da Solicitação'] || '-'}</td>
+            <td>${formatDate(item['Data da Solicitação'])}</td>
+            <td>${item['Nº Prontuário'] || item['N° Prontuário'] || '-'}</td>
+            <td>${item['Telefone'] || '-'}</td>
+            <td>${item['Unidade Solicitante'] || '-'}</td>
+            <td>${item['Cbo Especialidade'] || '-'}</td>
+            <td>${formatDate(item['Data Início da Pendência'])}</td>
+            <td>${item['Status'] || '-'}</td>
         `;
-        
-        tbody.appendChild(tr);
+        tbody.appendChild(row);
     });
     
-    // Atualizar informações de paginação
-    document.getElementById('showingFrom').textContent = dadosFiltrados.length > 0 ? inicio + 1 : 0;
-    document.getElementById('showingTo').textContent = Math.min(fim, dadosFiltrados.length);
-    document.getElementById('totalRegistros').textContent = dadosFiltrados.length;
-    document.getElementById('paginaAtual').textContent = paginaAtual;
-    
-    // Atualizar botões de paginação
-    const totalPaginas = Math.ceil(dadosFiltrados.length / itensPorPagina);
-    document.getElementById('btnAnterior').disabled = paginaAtual === 1;
-    document.getElementById('btnProximo').disabled = paginaAtual >= totalPaginas;
-    document.getElementById('btnProximo').textContent = paginaAtual < totalPaginas ? (paginaAtual + 1) : paginaAtual;
+    // Atualizar rodapé
+    const total = allData.length;
+    const showing = filteredData.length;
+    footer.textContent = `Mostrando de 1 até ${showing} de ${total} registros`;
 }
 
-// Eventos
-function inicializarEventos() {
-    // Botão Atualizar
-    document.getElementById('btnAtualizar').addEventListener('click', async () => {
-        document.getElementById('btnAtualizar').disabled = true;
-        document.getElementById('btnAtualizar').textContent = 'Atualizando...';
-        await carregarDados();
-        document.getElementById('btnAtualizar').disabled = false;
-        document.getElementById('btnAtualizar').innerHTML = `
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-            </svg>
-            Atualizar
-        `;
-    });
+// ===================================
+// FUNÇÕES AUXILIARES
+// ===================================
+function parseDate(dateString) {
+    if (!dateString) return null;
     
-    // Botão Limpar Filtros
-    document.getElementById('btnLimpar').addEventListener('click', () => {
-        document.querySelectorAll('.select-dropdown input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = checkbox.value === 'Todos' || checkbox.value === 'Todas' || checkbox.value === 'Todas as demandas';
-        });
-        document.querySelectorAll('.custom-select').forEach(select => atualizarTextoSelect(select));
-        aplicarFiltros();
-    });
+    // Tentar DD/MM/YYYY
+    let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (match) {
+        return new Date(match[3], match[2] - 1, match[1]);
+    }
     
-    // Botão Excel
-    document.getElementById('btnExcel').addEventListener('click', exportarParaExcel);
+    // Tentar YYYY-MM-DD
+    match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return new Date(match[1], match[2] - 1, match[3]);
+    }
     
-    // Botões de Paginação
-    document.getElementById('btnAnterior').addEventListener('click', () => {
-        if (paginaAtual > 1) {
-            paginaAtual--;
-            atualizarTabela();
-        }
-    });
-    
-    document.getElementById('btnProximo').addEventListener('click', () => {
-        const totalPaginas = Math.ceil(dadosFiltrados.length / itensPorPagina);
-        if (paginaAtual < totalPaginas) {
-            paginaAtual++;
-            atualizarTabela();
-        }
-    });
+    return null;
 }
 
-// Exportar para Excel
-function exportarParaExcel() {
-    const dadosExport = dadosFiltrados.map(item => ({
-        'N° Solicitação': item.numeroSolicitacao,
-        'Data da Solicitação': item.dataSolicitacao,
-        'Nº Prontuário': item.prontuario,
-        'Telefone': item.telefone,
-        'Unidade Solicitante': item.unidadeSolicitante,
-        'CBO Especialidade': item.cboEspecialidade,
-        'Data Início da Pendência': item.dataInicioPendencia,
-        'Status': item.status,
-        'Observação': item.observacao
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    
+    const date = parseDate(dateString);
+    if (!date || isNaN(date.getTime())) return dateString;
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
+}
+
+// ===================================
+// ATUALIZAR DADOS
+// ===================================
+function refreshData() {
+    loadData();
+}
+
+// ===================================
+// DOWNLOAD EXCEL
+// ===================================
+function downloadExcel() {
+    if (filteredData.length === 0) {
+        alert('Não há dados para exportar.');
+        return;
+    }
+    
+    // Preparar dados
+    const exportData = filteredData.map(item => ({
+        'Nº Solicitação': item['N° Solicitação'] || item['Número da Solicitação'] || '',
+        'Data Solicitação': item['Data da Solicitação'] || '',
+        'Nº Prontuário': item['Nº Prontuário'] || item['N° Prontuário'] || '',
+        'Telefone': item['Telefone'] || '',
+        'Unidade Solicitante': item['Unidade Solicitante'] || '',
+        'CBO Especialidade': item['Cbo Especialidade'] || '',
+        'Data Início Pendência': item['Data Início da Pendência'] || '',
+        'Status': item['Status'] || '',
+        'Prestador': item['Prestador'] || ''
     }));
     
-    const ws = XLSX.utils.json_to_sheet(dadosExport);
+    // Criar workbook
+    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
     
-    const dataAtual = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-    XLSX.writeFile(wb, `Pendencias_Eldorado_${dataAtual}.xlsx`);
+    // Larguras das colunas
+    ws['!cols'] = [
+        { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+        { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 }, { wch: 25 }
+    ];
+    
+    // Download
+    const hoje = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `Pendencias_Eldorado_${hoje}.xlsx`);
 }
