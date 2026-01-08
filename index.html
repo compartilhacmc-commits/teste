@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Central de Marcação</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">DIRETORIA DE REGULAÇÃO</h1>
+            <h2 class="header-subtitle">CENTRAL DE MARCAÇÃO DE CONSULTAS/DISTRITO SANITÁRIO ELDORADO</h2>
+            <h3 class="header-description">CONTROLE DE PENDÊNCIAS/SOLICITAÇÕES/SISTEMA VIVVER</h3>
+            <p class="header-signature">Página Criada por Ana P. A. Silva/Ref. Vivver/Distrito Sanitário Eldorado Matr.201704</p>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="container">
+        <!-- Barra de Controles -->
+        <div class="control-bar">
+            <button class="btn btn-refresh" onclick="reloadPage()">
+                <span class="btn-icon">🔄</span>
+                Atualizar Página
+            </button>
+            <button class="btn btn-clear" onclick="clearFilters()">
+                <span class="btn-icon">✖</span>
+                Limpar Filtros
+            </button>
+            <button class="btn btn-download" onclick="downloadExcel()">
+                <span class="btn-icon">📥</span>
+                Baixar Excel
+            </button>
+        </div>
+
+        <!-- Seção de Filtros -->
+        <div class="filters-section">
+            <h3 class="section-title">Filtros</h3>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="filter-unidade">Unidade de Saúde</label>
+                    <select id="filter-unidade" class="filter-select" multiple onchange="applyFilters()">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-especialidade">Especialidade</label>
+                    <select id="filter-especialidade" class="filter-select" multiple onchange="applyFilters()">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-status">Status</label>
+                    <select id="filter-status" class="filter-select" multiple onchange="applyFilters()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards de Estatísticas -->
+        <div class="cards-grid">
+            <div class="card card-primary">
+                <div class="card-icon">📊</div>
+                <div class="card-content">
+                    <h4 class="card-label">Total de Pendências</h4>
+                    <p class="card-value" id="total-pendencias">0</p>
+                </div>
+            </div>
+            <div class="card card-warning">
+                <div class="card-icon">⚠️</div>
+                <div class="card-content">
+                    <h4 class="card-label">Vencendo em 15 Dias</h4>
+                    <p class="card-value" id="vencendo-15">0</p>
+                </div>
+            </div>
+            <div class="card card-danger">
+                <div class="card-icon">🔴</div>
+                <div class="card-content">
+                    <h4 class="card-label">Vencendo em 30 Dias</h4>
+                    <p class="card-value" id="vencendo-30">0</p>
+                </div>
+            </div>
+            <div class="card card-success">
+                <div class="card-icon">📈</div>
+                <div class="card-content">
+                    <h4 class="card-label">Porcentagem Filtrada</h4>
+                    <p class="card-value" id="porcentagem-filtro">100%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências por Unidade de Saúde</h3>
+                <canvas id="chartUnidades"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências por Especialidade</h3>
+                <canvas id="chartEspecialidades"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráficos de Vencimento -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Análise de Vencimentos - 15 Dias</h3>
+                <canvas id="chartVencimento15"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Análise de Vencimentos - 30 Dias</h3>
+                <canvas id="chartVencimento30"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabela de Dados -->
+        <div class="table-section">
+            <h3 class="section-title">Detalhamento das Pendências</h3>
+            <div class="table-responsive">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Nº Solicitação</th>
+                            <th>Data Solicitação</th>
+                            <th>Nº Prontuário</th>
+                            <th>Telefone</th>
+                            <th>Unidade Solicitante</th>
+                            <th>CBO Especialidade</th>
+                            <th>Data Início Pendência</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Dados serão inseridos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-title">DIRETORIA DE REGULAÇÃO</p>
+            <p class="footer-subtitle">CENTRAL DE MARCAÇÃO DE CONSULTAS</p>
+            <p class="footer-district">DISTRITO SANITÁRIO ELDORADO</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
