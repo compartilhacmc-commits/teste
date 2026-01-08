@@ -3,121 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Eldorado - Controle de Pendências</title>
+    <title>Painel de Controle de Pendências - Distrito Eldorado</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <!-- Cabeçalho -->
-    <header class="header">
+    <header class="header-gradient">
         <div class="header-content">
-            <h1 class="header-title">
-                DIRETORIA DE REGULAÇÃO<br>
-                CENTRAL DE MARCAÇÃO DE CONSULTAS/DISTRITO SANITÁRIO ELDORADO<br>
-                CONTROLE DE PENDÊNCIAS/SOLICITAÇÕES/SISTEMA VIVVER
-            </h1>
-            <p class="header-signature">
-                Página Criada por Ana P. A. Silva/Ref. Vivver/Distrito Sanitário Eldorado Matr.201704
-            </p>
+            <h1>DIRETORIA DE REGULAÇÃO</h1>
+            <h2>CENTRAL DE MARCAÇÃO DE CONSULTAS/DISTRITO SANITÁRIO ELDORADO</h2>
+            <h3>CONTROLE DE PENDÊNCIAS/SOLICITAÇÕES/SISTEMA VIVVER</h3>
+            <p class="signature">Página Criada por Ana P. A. Silva/Ref. Vivver/Distrito Sanitário Eldorado Matr.201704</p>
         </div>
     </header>
 
+    <!-- Botões de Ação -->
+    <div class="action-buttons">
+        <button id="btnAtualizar" class="btn btn-primary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+            </svg>
+            Atualizar
+        </button>
+        <button id="btnLimpar" class="btn btn-secondary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+            </svg>
+            Limpar Filtros
+        </button>
+        <button id="btnExcel" class="btn btn-success">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                <path d="M5.884 6.68a.5.5 0 1 0-.768.64L7.349 10l-2.233 2.68a.5.5 0 0 0 .768.64L8 10.781l2.116 2.54a.5.5 0 0 0 .768-.641L8.651 10l2.233-2.68a.5.5 0 0 0-.768-.64L8 9.219l-2.116-2.54z"/>
+            </svg>
+            Excel
+        </button>
+        <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">Conectado</span>
+        </div>
+    </div>
+
     <!-- Container Principal -->
     <div class="container">
-        <!-- Botões de Ação -->
-        <div class="action-buttons">
-            <div class="status-indicator">
-                <span class="status-dot"></span>
-                <span class="status-text">Conectado</span>
-            </div>
-            <button id="btnAtualizar" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                </svg>
-                Atualizar
-            </button>
-            <button id="btnLimparFiltros" class="btn btn-secondary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                Limpar Filtros
-            </button>
-            <button id="btnExportar" class="btn btn-success">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Excel
-            </button>
-        </div>
-
         <!-- Filtros -->
         <div class="filters-section">
-            <h2 class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                </svg>
-                Filtros
-            </h2>
+            <h3>▼ Filtros</h3>
             <div class="filters-grid">
-                <div class="filter-item">
-                    <label for="filtroUnidade">Unidade de Saúde:</label>
-                    <select id="filtroUnidade" class="filter-select" multiple>
-                        <option value="">Carregando...</option>
-                    </select>
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <div class="custom-select" id="selectStatus">
+                        <div class="select-trigger">
+                            <span>Todos</span>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                            </svg>
+                        </div>
+                        <div class="select-dropdown">
+                            <label><input type="checkbox" value="Todos" checked> Todos</label>
+                            <label><input type="checkbox" value="Respondido"> Respondido</label>
+                            <label><input type="checkbox" value="Respondida"> Respondida</label>
+                            <label><input type="checkbox" value="Agendado"> Agendado</label>
+                            <label><input type="checkbox" value="pendencia"> Pendência</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="filter-item">
-                    <label for="filtroPrestador">Prestador:</label>
-                    <select id="filtroPrestador" class="filter-select" multiple>
-                        <option value="">Carregando...</option>
-                    </select>
+
+                <div class="filter-group">
+                    <label>UBS:</label>
+                    <div class="custom-select" id="selectUBS">
+                        <div class="select-trigger">
+                            <span>Todas</span>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                            </svg>
+                        </div>
+                        <div class="select-dropdown" id="ubsOptions">
+                            <label><input type="checkbox" value="Todas" checked> Todas</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="filter-item">
-                    <label for="filtroEspecialidade">Especialidade:</label>
-                    <select id="filtroEspecialidade" class="filter-select" multiple>
-                        <option value="">Carregando...</option>
-                    </select>
+
+                <div class="filter-group">
+                    <label>Motivo da Pendência:</label>
+                    <div class="custom-select" id="selectMotivo">
+                        <div class="select-trigger">
+                            <span>Todas as demandas</span>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                            </svg>
+                        </div>
+                        <div class="select-dropdown" id="motivoOptions">
+                            <label><input type="checkbox" value="Todas" checked> Todas as demandas</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="filter-item">
-                    <label for="filtroStatus">Status:</label>
-                    <select id="filtroStatus" class="filter-select" multiple>
-                        <option value="">Carregando...</option>
-                    </select>
+
+                <div class="filter-group">
+                    <label>Prestador:</label>
+                    <div class="custom-select" id="selectPrestador">
+                        <div class="select-trigger">
+                            <span>Todos</span>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                            </svg>
+                        </div>
+                        <div class="select-dropdown" id="prestadorOptions">
+                            <label><input type="checkbox" value="Todos" checked> Todos</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Especialidade:</label>
+                    <div class="custom-select" id="selectEspecialidade">
+                        <div class="select-trigger">
+                            <span>Todas</span>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                            </svg>
+                        </div>
+                        <div class="select-dropdown" id="especialidadeOptions">
+                            <label><input type="checkbox" value="Todas" checked> Todas</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Cards -->
-        <div class="cards-grid">
-            <div class="card card-primary">
-                <div class="card-icon">📊</div>
+        <!-- Cards de Estatísticas -->
+        <div class="stats-cards">
+            <div class="stat-card card-blue">
+                <div class="card-icon">
+                    <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                </div>
                 <div class="card-content">
-                    <h3 class="card-title">Total de Pendências</h3>
-                    <p class="card-value" id="cardTotal">0</p>
+                    <h4>Total de Pendências</h4>
+                    <p class="card-value" id="totalPendencias">0</p>
                 </div>
             </div>
-            <div class="card card-warning">
-                <div class="card-icon">⚠️</div>
+
+            <div class="stat-card card-orange">
+                <div class="card-icon">
+                    <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
+                </div>
                 <div class="card-content">
-                    <h3 class="card-title">Vencendo em 15 dias</h3>
-                    <p class="card-value" id="cardVenc15">0</p>
+                    <h4>Vencendo em 15 Dias</h4>
+                    <p class="card-value" id="vencendo15">0</p>
                 </div>
             </div>
-            <div class="card card-danger">
-                <div class="card-icon">🔴</div>
+
+            <div class="stat-card card-red">
+                <div class="card-icon">
+                    <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                </div>
                 <div class="card-content">
-                    <h3 class="card-title">Vencendo em 30 dias</h3>
-                    <p class="card-value" id="cardVenc30">0</p>
+                    <h4>Vencendo em 30 Dias</h4>
+                    <p class="card-value" id="vencendo30">0</p>
                 </div>
             </div>
-            <div class="card card-info">
-                <div class="card-icon">📈</div>
+
+            <div class="stat-card card-purple">
+                <div class="card-icon">
+                    <svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                    </svg>
+                </div>
                 <div class="card-content">
-                    <h3 class="card-title">Porcentagem Filtrada</h3>
-                    <p class="card-value" id="cardPorcentagem">100%</p>
+                    <h4>Porcentagem Filtrada</h4>
+                    <p class="card-value" id="porcentagem">0%</p>
                 </div>
             </div>
         </div>
@@ -125,82 +191,69 @@
         <!-- Gráficos -->
         <div class="charts-grid">
             <div class="chart-container">
-                <h3 class="chart-title">Pendências por Unidade de Saúde</h3>
+                <h3>Quantidade de Pendências por Unidade Solicitante</h3>
                 <canvas id="chartUnidades"></canvas>
             </div>
+
             <div class="chart-container">
-                <h3 class="chart-title">Pendências por Especialidade</h3>
+                <h3>Quantidade de Pendências por Especialidade</h3>
                 <canvas id="chartEspecialidades"></canvas>
             </div>
         </div>
 
-        <!-- Gráficos de Vencimento -->
         <div class="charts-grid">
             <div class="chart-container">
-                <h3 class="chart-title">Pendências Vencendo - 15 Dias</h3>
-                <canvas id="chartVenc15"></canvas>
+                <h3>Pendências Vencendo em 15 Dias</h3>
+                <canvas id="chartVencimento15"></canvas>
             </div>
+
             <div class="chart-container">
-                <h3 class="chart-title">Pendências Vencendo - 30 Dias</h3>
-                <canvas id="chartVenc30"></canvas>
+                <h3>Pendências Vencendo em 30 Dias</h3>
+                <canvas id="chartVencimento30"></canvas>
             </div>
         </div>
 
-        <!-- Tabela -->
+        <!-- Tabela de Dados -->
         <div class="table-section">
-            <h2 class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
-                </svg>
-                Todas as Pendências
-            </h2>
-            <div class="table-controls">
-                <label>
-                    Exibir
-                    <select id="pageSize">
-                        <option value="10">10</option>
-                        <option value="25" selected>25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                    resultados por página
-                </label>
+            <h3>📋 Todas as Demandas</h3>
+            <div class="table-info">
+                <p>Mostrando de <span id="showingFrom">1</span> até <span id="showingTo">15</span> de <span id="totalRegistros">170</span> registros</p>
             </div>
-            <div class="table-wrapper">
-                <table class="data-table" id="tabelaPendencias">
+            <div class="table-responsive">
+                <table id="tabelaPendencias">
                     <thead>
                         <tr>
-                            <th>Nº Solicitação</th>
-                            <th>Data Solicitação</th>
+                            <th>N° Solicitação</th>
+                            <th>Data da Solicitação</th>
                             <th>Nº Prontuário</th>
                             <th>Telefone</th>
                             <th>Unidade Solicitante</th>
                             <th>CBO Especialidade</th>
-                            <th>Data Início Pendência</th>
+                            <th>Data Início da Pendência</th>
                             <th>Status</th>
+                            <th>Observação</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaBody">
-                        <tr>
-                            <td colspan="8" class="loading-cell">Carregando dados...</td>
-                        </tr>
+                        <!-- Dados serão inseridos via JavaScript -->
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination">
-                <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0 registros</div>
-                <div class="pagination-buttons" id="paginationButtons"></div>
+            <div class="pagination">
+                <button id="btnAnterior" class="btn-pagination">Anterior</button>
+                <span id="paginaAtual">1</span>
+                <button id="btnProximo" class="btn-pagination">1</button>
             </div>
         </div>
     </div>
 
     <!-- Rodapé -->
-    <footer class="footer">
-        <p>DIRETORIA DE REGULAÇÃO</p>
-        <p>CENTRAL DE MARCAÇÃO DE CONSULTAS</p>
-        <p>DISTRITO SANITÁRIO ELDORADO</p>
+    <footer>
+        <div class="footer-content">
+            <p>DIRETORIA DE REGULAÇÃO</p>
+            <p>CENTRAL DE MARCAÇÃO DE CONSULTAS</p>
+            <p>DISTRITO SANITÁRIO ELDORADO</p>
+        </div>
     </footer>
 
     <script src="script.js"></script>
