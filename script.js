@@ -1,349 +1,629 @@
-// ======================
-// CONFIG DA PLANILHA
-// ======================
-const SHEET_ID = "1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4";
-// Aba (gid 278071504). Vamos puxar via "gviz" pelo NOME da aba.
-// Se der erro por nome, me diga o nome exato da aba, que ajusto.
-const SHEET_NAME = "Pendências - Consultas Especializadas - Distrito Eldorado"; // tentativa pelo título visível
-// Fallback: se não funcionar, você pode colocar o nome exato da guia (tab) do Google Sheets.
+// Configuração
+const SHEET_ID = '1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4';
+const SHEET_NAME = 'pendencias eldorado';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-const gvizUrl = (sheetName) =>
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+// Dados globais
+let dadosOriginais = [];
+let dadosFiltrados = [];
+let chartUnidades = null;
+let chartEspecialidades = null;
+let chartVenc15 = null;
+let chartVenc30 = null;
+let currentPage = 1;
+let pageSize = 25;
 
-let RAW = [];
-let FILTERED = [];
-let totalLoaded = 0;
-
-let tsUnidade, tsCbo, tsStatus;
-let chartUnidade, chartCbo;
-
-const el = (id) => document.getElementById(id);
-
-const COLS = {
-  numSolic: "N° Solicitação",
-  dataSolic: "Data da Solicitação",
-  prontuario: "Nº Prontuário",
-  telefone: "Telefone",
-  unidade: "Unidade Solicitante",
-  cbo: "Cbo Especialidade",
-  dataInicio: "Data Início da Pendência",
-  status: "Status",
-  motivo: "Motivo da Pendência",
-};
-
-function parsePtDate(d) {
-  // Espera dd/mm/yyyy
-  if (!d || typeof d !== "string") return null;
-  const m = d.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!m) return null;
-  const [_, dd, mm, yyyy] = m;
-  return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-}
-
-function daysBetween(a, b) {
-  const ms = 24 * 60 * 60 * 1000;
-  return Math.floor((b - a) / ms);
-}
-
-function safeStr(v) {
-  return (v ?? "").toString().trim();
-}
-
-async function fetchSheet() {
-  // Lê Google Sheets via gviz JSON
-  const url = gvizUrl(SHEET_NAME);
-  const res = await fetch(url, { cache: "no-store" });
-  const text = await res.text();
-
-  // gviz devolve: google.visualization.Query.setResponse({...});
-  const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-
-  const cols = json.table.cols.map(c => c.label);
-  const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
-
-  const objects = rows.map(arr => {
-    const obj = {};
-    cols.forEach((name, i) => obj[name] = arr[i]);
-    return obj;
-  });
-
-  return objects;
-}
-
-function uniq(arr) {
-  return Array.from(new Set(arr)).filter(Boolean).sort((a,b)=>a.localeCompare(b,"pt-BR"));
-}
-
-function buildSelectOptions(selectEl, values) {
-  selectEl.innerHTML = "";
-  values.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    selectEl.appendChild(opt);
-  });
-}
-
-function initTomSelect() {
-  const base = {
-    plugins: ["remove_button", "clear_button"],
-    create: false,
-    persist: false,
-    closeAfterSelect: false,
-    hideSelected: true
-  };
-
-  tsUnidade = new TomSelect("#fUnidade", base);
-  tsCbo = new TomSelect("#fEspecialidade", base);
-  tsStatus = new TomSelect("#fStatus", base);
-
-  const onChange = () => applyAndRender();
-  tsUnidade.on("change", onChange);
-  tsCbo.on("change", onChange);
-  tsStatus.on("change", onChange);
-}
-
-function getFilterValues(ts) {
-  const v = ts.getValue();
-  return Array.isArray(v) ? v : (v ? [v] : []);
-}
-
-function applyFilters() {
-  const fUn = new Set(getFilterValues(tsUnidade));
-  const fCb = new Set(getFilterValues(tsCbo));
-  const fSt = new Set(getFilterValues(tsStatus));
-
-  FILTERED = RAW.filter(r => {
-    const unidade = safeStr(r[COLS.unidade]);
-    const cbo = safeStr(r[COLS.cbo]);
-    const status = safeStr(r[COLS.status]);
-
-    const okUn = fUn.size ? fUn.has(unidade) : true;
-    const okCb = fCb.size ? fCb.has(cbo) : true;
-    const okSt = fSt.size ? fSt.has(status) : true;
-
-    return okUn && okCb && okSt;
-  });
-}
-
-function computeKpis() {
-  const today = new Date();
-  const total = FILTERED.length;
-
-  let v15 = 0, v30 = 0;
-  for (const r of FILTERED) {
-    const di = parsePtDate(safeStr(r[COLS.dataInicio]));
-    if (!di) continue;
-    const age = daysBetween(di, today); // dias desde início
-    // "vencendo em 15 dias" -> até 15 dias desde início
-    if (age >= 0 && age <= 15) v15++;
-    if (age >= 0 && age <= 30) v30++;
-  }
-
-  const pct = totalLoaded ? Math.round((total / totalLoaded) * 100) : 0;
-
-  el("kpiTotal").textContent = total.toLocaleString("pt-BR");
-  el("kpi15").textContent = v15.toLocaleString("pt-BR");
-  el("kpi30").textContent = v30.toLocaleString("pt-BR");
-  el("kpiPct").textContent = `${pct}%`;
-}
-
-function groupCount(key) {
-  const m = new Map();
-  for (const r of FILTERED) {
-    const k = safeStr(r[key]) || "(Vazio)";
-    m.set(k, (m.get(k) || 0) + 1);
-  }
-  return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]).slice(0, 12);
-}
-
-const valueLabelPlugin = {
-  id: "valueLabelPlugin",
-  afterDatasetsDraw(chart) {
-    const { ctx } = chart;
-    ctx.save();
-    const meta = chart.getDatasetMeta(0);
-    const data = chart.data.datasets[0].data;
-
-    ctx.font = "700 12px system-ui, -apple-system, Segoe UI, Roboto";
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    meta.data.forEach((bar, i) => {
-      const val = data[i];
-      const x = bar.x;
-      const y = bar.y + (bar.base - bar.y) / 2; // meio da barra
-      ctx.fillText(String(val), x, y);
-    });
-
-    ctx.restore();
-  }
-};
-
-function renderCharts() {
-  const u = groupCount(COLS.unidade);
-  const c = groupCount(COLS.cbo);
-
-  const labelsU = u.map(x => x[0]);
-  const dataU = u.map(x => x[1]);
-
-  const labelsC = c.map(x => x[0]);
-  const dataC = c.map(x => x[1]);
-
-  const commonOptions = (color) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: true }
-    },
-    scales: {
-      x: {
-        ticks: { maxRotation: 35, minRotation: 35, color: "#334155", font: { weight: "700", size: 11 } },
-        grid: { display: false }
-      },
-      y: {
-        beginAtZero: true,
-        ticks: { color: "#64748b" },
-        grid: { color: "rgba(15,23,42,.08)" }
-      }
-    }
-  });
-
-  // Unidade (Azul)
-  if (chartUnidade) chartUnidade.destroy();
-  chartUnidade = new Chart(el("chartUnidade"), {
-    type: "bar",
-    data: {
-      labels: labelsU,
-      datasets: [{
-        data: dataU,
-        backgroundColor: "rgba(37,99,235,.95)",
-        borderRadius: 10,
-        maxBarThickness: 48
-      }]
-    },
-    options: commonOptions("#2563eb"),
-    plugins: [valueLabelPlugin]
-  });
-
-  // CBO (Verde)
-  if (chartCbo) chartCbo.destroy();
-  chartCbo = new Chart(el("chartCbo"), {
-    type: "bar",
-    data: {
-      labels: labelsC,
-      datasets: [{
-        data: dataC,
-        backgroundColor: "rgba(22,163,74,.95)",
-        borderRadius: 10,
-        maxBarThickness: 48
-      }]
-    },
-    options: commonOptions("#16a34a"),
-    plugins: [valueLabelPlugin]
-  });
-}
-
-function renderTable() {
-  const body = el("tblBody");
-  body.innerHTML = "";
-
-  const rows = FILTERED.slice(0, 500); // limite visual (pode aumentar)
-  for (const r of rows) {
-    const tr = document.createElement("tr");
-    const cells = [
-      r[COLS.numSolic],
-      r[COLS.dataSolic],
-      r[COLS.prontuario],
-      r[COLS.telefone],
-      r[COLS.unidade],
-      r[COLS.cbo],
-      r[COLS.dataInicio],
-      r[COLS.status]
-    ];
-    cells.forEach(v => {
-      const td = document.createElement("td");
-      td.textContent = safeStr(v);
-      tr.appendChild(td);
-    });
-    body.appendChild(tr);
-  }
-
-  el("countRows").textContent =
-    `Mostrando ${Math.min(FILTERED.length, rows.length)} de ${FILTERED.length} registros (após filtros).`;
-}
-
-function applyAndRender() {
-  applyFilters();
-  computeKpis();
-  renderCharts();
-  renderTable();
-}
-
-function clearFilters() {
-  tsUnidade.clear(true);
-  tsCbo.clear(true);
-  tsStatus.clear(true);
-  applyAndRender();
-}
-
-function exportExcel() {
-  const out = FILTERED.map(r => ({
-    "Número da Solicitação": safeStr(r[COLS.numSolic]),
-    "Data da Solicitação": safeStr(r[COLS.dataSolic]),
-    "Nº Prontuário": safeStr(r[COLS.prontuario]),
-    "Telefone": safeStr(r[COLS.telefone]),
-    "Unidade Solicitante": safeStr(r[COLS.unidade]),
-    "CBO Especialidade": safeStr(r[COLS.cbo]),
-    "Data Início da Pendência": safeStr(r[COLS.dataInicio]),
-    "Status": safeStr(r[COLS.status]),
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(out);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Pendencias");
-  XLSX.writeFile(wb, "pendencias_filtradas.xlsx");
-}
-
-function setLastUpdate() {
-  const d = new Date();
-  el("lastUpdate").textContent = `Última atualização: ${d.toLocaleString("pt-BR")}`;
-}
-
-async function init() {
-  try {
-    el("connStatus").textContent = "Conectando...";
-    const data = await fetchSheet();
-
-    RAW = data;
-    totalLoaded = RAW.length;
-
-    // opções dos filtros
-    const unidades = uniq(RAW.map(r => safeStr(r[COLS.unidade])));
-    const cbos = uniq(RAW.map(r => safeStr(r[COLS.cbo])));
-    const status = uniq(RAW.map(r => safeStr(r[COLS.status])));
-
-    buildSelectOptions(el("fUnidade"), unidades);
-    buildSelectOptions(el("fEspecialidade"), cbos);
-    buildSelectOptions(el("fStatus"), status);
-
-    initTomSelect();
-    applyAndRender();
-
-    el("connStatus").textContent = "Conectado";
-    setLastUpdate();
-
-  } catch (e) {
-    console.error(e);
-    el("connStatus").textContent = "Erro ao conectar";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  el("btnRefresh").addEventListener("click", () => location.reload());
-  el("btnClear").addEventListener("click", clearFilters);
-  el("btnExcel").addEventListener("click", exportExcel);
-  init();
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDados();
+    configurarEventos();
 });
+
+// Configurar eventos dos botões
+function configurarEventos() {
+    document.getElementById('btnAtualizar').addEventListener('click', () => {
+        carregarDados();
+    });
+    
+    document.getElementById('btnLimparFiltros').addEventListener('click', () => {
+        limparFiltros();
+    });
+    
+    document.getElementById('btnExportar').addEventListener('click', () => {
+        exportarParaExcel();
+    });
+    
+    document.getElementById('pageSize').addEventListener('change', (e) => {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1;
+        renderizarTabela();
+    });
+    
+    // Eventos de filtros
+    ['filtroUnidade', 'filtroPrestador', 'filtroEspecialidade', 'filtroStatus'].forEach(id => {
+        document.getElementById(id).addEventListener('change', aplicarFiltros);
+    });
+}
+
+// Carregar dados do Google Sheets
+async function carregarDados() {
+    try {
+        mostrarCarregamento(true);
+        
+        const response = await fetch(SHEET_URL);
+        const text = await response.text();
+        
+        // Remover prefixo do Google e parsear JSON
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        
+        if (json.table && json.table.rows) {
+            dadosOriginais = processarDados(json.table);
+            dadosFiltrados = [...dadosOriginais];
+            
+            popularFiltros();
+            aplicarFiltros();
+            atualizarCards();
+            renderizarGraficos();
+            renderizarTabela();
+        }
+        
+        mostrarCarregamento(false);
+        mostrarNotificacao('Dados atualizados com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        mostrarCarregamento(false);
+        mostrarNotificacao('Erro ao carregar dados. Verifique a conexão.', 'error');
+    }
+}
+
+// Processar dados do Google Sheets
+function processarDados(table) {
+    const rows = table.rows;
+    const dados = [];
+    
+    // Pular cabeçalho (primeira linha)
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row.c) continue;
+        
+        const registro = {
+            numeroSolicitacao: getCellValue(row.c[0]),
+            dataSolicitacao: getCellValue(row.c[1]),
+            prontuario: getCellValue(row.c[2]),
+            telefone: getCellValue(row.c[3]),
+            unidadeSolicitante: getCellValue(row.c[9]),
+            cboEspecialidade: getCellValue(row.c[10]),
+            dataInicioPendencia: getCellValue(row.c[12]),
+            status: getCellValue(row.c[19]),
+            prestador: getCellValue(row.c[14]) || 'Não informado'
+        };
+        
+        dados.push(registro);
+    }
+    
+    return dados;
+}
+
+// Obter valor da célula
+function getCellValue(cell) {
+    if (!cell || cell.v === null || cell.v === undefined) return '';
+    return cell.v.toString();
+}
+
+// Popular filtros
+function popularFiltros() {
+    const unidades = [...new Set(dadosOriginais.map(d => d.unidadeSolicitante).filter(v => v))].sort();
+    const prestadores = [...new Set(dadosOriginais.map(d => d.prestador).filter(v => v))].sort();
+    const especialidades = [...new Set(dadosOriginais.map(d => d.cboEspecialidade).filter(v => v))].sort();
+    const status = [...new Set(dadosOriginais.map(d => d.status).filter(v => v))].sort();
+    
+    popularSelect('filtroUnidade', unidades);
+    popularSelect('filtroPrestador', prestadores);
+    popularSelect('filtroEspecialidade', especialidades);
+    popularSelect('filtroStatus', status);
+}
+
+// Popular select
+function popularSelect(id, valores) {
+    const select = document.getElementById(id);
+    select.innerHTML = valores.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+// Aplicar filtros
+function aplicarFiltros() {
+    const unidadesSelecionadas = Array.from(document.getElementById('filtroUnidade').selectedOptions).map(o => o.value);
+    const prestadoresSelecionados = Array.from(document.getElementById('filtroPrestador').selectedOptions).map(o => o.value);
+    const especialidadesSelecionadas = Array.from(document.getElementById('filtroEspecialidade').selectedOptions).map(o => o.value);
+    const statusSelecionados = Array.from(document.getElementById('filtroStatus').selectedOptions).map(o => o.value);
+    
+    dadosFiltrados = dadosOriginais.filter(d => {
+        const passaUnidade = unidadesSelecionadas.length === 0 || unidadesSelecionadas.includes(d.unidadeSolicitante);
+        const passaPrestador = prestadoresSelecionados.length === 0 || prestadoresSelecionados.includes(d.prestador);
+        const passaEspecialidade = especialidadesSelecionadas.length === 0 || especialidadesSelecionadas.includes(d.cboEspecialidade);
+        const passaStatus = statusSelecionados.length === 0 || statusSelecionados.includes(d.status);
+        
+        return passaUnidade && passaPrestador && passaEspecialidade && passaStatus;
+    });
+    
+    currentPage = 1;
+    atualizarCards();
+    renderizarGraficos();
+    renderizarTabela();
+}
+
+// Limpar filtros
+function limparFiltros() {
+    ['filtroUnidade', 'filtroPrestador', 'filtroEspecialidade', 'filtroStatus'].forEach(id => {
+        const select = document.getElementById(id);
+        Array.from(select.options).forEach(option => option.selected = false);
+    });
+    
+    aplicarFiltros();
+    mostrarNotificacao('Filtros limpos com sucesso!', 'success');
+}
+
+// Atualizar cards
+function atualizarCards() {
+    const total = dadosFiltrados.length;
+    const totalGeral = dadosOriginais.length;
+    
+    // Calcular vencimentos
+    const hoje = new Date();
+    const venc15 = dadosFiltrados.filter(d => {
+        if (!d.dataInicioPendencia) return false;
+        const dataInicio = parseData(d.dataInicioPendencia);
+        const diffDias = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
+        return diffDias >= 15;
+    }).length;
+    
+    const venc30 = dadosFiltrados.filter(d => {
+        if (!d.dataInicioPendencia) return false;
+        const dataInicio = parseData(d.dataInicioPendencia);
+        const diffDias = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
+        return diffDias >= 30;
+    }).length;
+    
+    const porcentagem = totalGeral > 0 ? ((total / totalGeral) * 100).toFixed(1) : 0;
+    
+    document.getElementById('cardTotal').textContent = total;
+    document.getElementById('cardVenc15').textContent = venc15;
+    document.getElementById('cardVenc30').textContent = venc30;
+    document.getElementById('cardPorcentagem').textContent = porcentagem + '%';
+}
+
+// Parse de data
+function parseData(dataStr) {
+    if (!dataStr) return null;
+    
+    // Tentar diferentes formatos
+    const formatos = [
+        // dd/mm/yyyy
+        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+        // yyyy-mm-dd
+        /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+        // Date(valor)
+        /^Date\((\d+)\)$/
+    ];
+    
+    for (let formato of formatos) {
+        const match = dataStr.match(formato);
+        if (match) {
+            if (formato.source.includes('Date')) {
+                // Formato Date(valor)
+                return new Date(parseInt(match[1]));
+            } else if (formato.source.startsWith('^\\(\\d{4}')) {
+                // Formato yyyy-mm-dd
+                return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+            } else {
+                // Formato dd/mm/yyyy
+                return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+            }
+        }
+    }
+    
+    // Tentar Date.parse como último recurso
+    const date = new Date(dataStr);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+// Renderizar gráficos
+function renderizarGraficos() {
+    renderizarGraficoUnidades();
+    renderizarGraficoEspecialidades();
+    renderizarGraficosVencimento();
+}
+
+// Gráfico de Unidades
+function renderizarGraficoUnidades() {
+    const contagem = {};
+    dadosFiltrados.forEach(d => {
+        if (d.unidadeSolicitante) {
+            contagem[d.unidadeSolicitante] = (contagem[d.unidadeSolicitante] || 0) + 1;
+        }
+    });
+    
+    const dados = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+    
+    const ctx = document.getElementById('chartUnidades');
+    
+    if (chartUnidades) {
+        chartUnidades.destroy();
+    }
+    
+    chartUnidades = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dados.map(d => d[0]),
+            datasets: [{
+                label: 'Pendências',
+                data: dados.map(d => d[1]),
+                backgroundColor: '#4a90e2',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                datalabels: {
+                    display: true,
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    anchor: 'center',
+                    align: 'center'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const data = dataset.data[index];
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(data, bar.x, bar.y);
+                    });
+                });
+            }
+        }]
+    });
+}
+
+// Gráfico de Especialidades
+function renderizarGraficoEspecialidades() {
+    const contagem = {};
+    dadosFiltrados.forEach(d => {
+        if (d.cboEspecialidade) {
+            contagem[d.cboEspecialidade] = (contagem[d.cboEspecialidade] || 0) + 1;
+        }
+    });
+    
+    const dados = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+    
+    const ctx = document.getElementById('chartEspecialidades');
+    
+    if (chartEspecialidades) {
+        chartEspecialidades.destroy();
+    }
+    
+    chartEspecialidades = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dados.map(d => d[0]),
+            datasets: [{
+                label: 'Pendências',
+                data: dados.map(d => d[1]),
+                backgroundColor: '#28a745',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const data = dataset.data[index];
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(data, bar.x, bar.y);
+                    });
+                });
+            }
+        }]
+    });
+}
+
+// Gráficos de vencimento
+function renderizarGraficosVencimento() {
+    const hoje = new Date();
+    
+    // Vencendo em 15 dias
+    const dados15 = dadosFiltrados.filter(d => {
+        if (!d.dataInicioPendencia) return false;
+        const dataInicio = parseData(d.dataInicioPendencia);
+        if (!dataInicio) return false;
+        const diffDias = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
+        return diffDias >= 15;
+    });
+    
+    // Vencendo em 30 dias
+    const dados30 = dadosFiltrados.filter(d => {
+        if (!d.dataInicioPendencia) return false;
+        const dataInicio = parseData(d.dataInicioPendencia);
+        if (!dataInicio) return false;
+        const diffDias = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
+        return diffDias >= 30;
+    });
+    
+    // Gráfico 15 dias
+    const ctx15 = document.getElementById('chartVenc15');
+    if (chartVenc15) chartVenc15.destroy();
+    
+    chartVenc15 = new Chart(ctx15, {
+        type: 'doughnut',
+        data: {
+            labels: ['Vencendo em 15 dias', 'Outros'],
+            datasets: [{
+                data: [dados15.length, dadosFiltrados.length - dados15.length],
+                backgroundColor: ['#ffc107', '#e0e0e0']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Gráfico 30 dias
+    const ctx30 = document.getElementById('chartVenc30');
+    if (chartVenc30) chartVenc30.destroy();
+    
+    chartVenc30 = new Chart(ctx30, {
+        type: 'doughnut',
+        data: {
+            labels: ['Vencendo em 30 dias', 'Outros'],
+            datasets: [{
+                data: [dados30.length, dadosFiltrados.length - dados30.length],
+                backgroundColor: ['#dc3545', '#e0e0e0']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Renderizar tabela
+function renderizarTabela() {
+    const tbody = document.getElementById('tabelaBody');
+    const inicio = (currentPage - 1) * pageSize;
+    const fim = inicio + pageSize;
+    const dadosPagina = dadosFiltrados.slice(inicio, fim);
+    
+    if (dadosPagina.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="loading-cell">Nenhum registro encontrado</td></tr>';
+        document.getElementById('paginationInfo').textContent = 'Mostrando 0 de 0 registros';
+        document.getElementById('paginationButtons').innerHTML = '';
+        return;
+    }
+    
+    tbody.innerHTML = dadosPagina.map(d => `
+        <tr>
+            <td>${d.numeroSolicitacao || '-'}</td>
+            <td>${d.dataSolicitacao || '-'}</td>
+            <td>${d.prontuario || '-'}</td>
+            <td>${d.telefone || '-'}</td>
+            <td>${d.unidadeSolicitante || '-'}</td>
+            <td>${d.cboEspecialidade || '-'}</td>
+            <td>${d.dataInicioPendencia || '-'}</td>
+            <td>${d.status || '-'}</td>
+        </tr>
+    `).join('');
+    
+    // Atualizar paginação
+    const totalPaginas = Math.ceil(dadosFiltrados.length / pageSize);
+    document.getElementById('paginationInfo').textContent = 
+        `Mostrando ${inicio + 1} até ${Math.min(fim, dadosFiltrados.length)} de ${dadosFiltrados.length} registros`;
+    
+    renderizarBotoesPaginacao(totalPaginas);
+}
+
+// Renderizar botões de paginação
+function renderizarBotoesPaginacao(totalPaginas) {
+    const container = document.getElementById('paginationButtons');
+    let html = '';
+    
+    // Botão anterior
+    html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="mudarPagina(${currentPage - 1})">Anterior</button>`;
+    
+    // Botões de páginas
+    const maxBotoes = 5;
+    let inicioPag = Math.max(1, currentPage - Math.floor(maxBotoes / 2));
+    let fimPag = Math.min(totalPaginas, inicioPag + maxBotoes - 1);
+    
+    if (fimPag - inicioPag < maxBotoes - 1) {
+        inicioPag = Math.max(1, fimPag - maxBotoes + 1);
+    }
+    
+    if (inicioPag > 1) {
+        html += `<button onclick="mudarPagina(1)">1</button>`;
+        if (inicioPag > 2) html += '<button disabled>...</button>';
+    }
+    
+    for (let i = inicioPag; i <= fimPag; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="mudarPagina(${i})">${i}</button>`;
+    }
+    
+    if (fimPag < totalPaginas) {
+        if (fimPag < totalPaginas - 1) html += '<button disabled>...</button>';
+        html += `<button onclick="mudarPagina(${totalPaginas})">${totalPaginas}</button>`;
+    }
+    
+    // Botão próximo
+    html += `<button ${currentPage === totalPaginas ? 'disabled' : ''} onclick="mudarPagina(${currentPage + 1})">Próximo</button>`;
+    
+    container.innerHTML = html;
+}
+
+// Mudar página
+function mudarPagina(pagina) {
+    currentPage = pagina;
+    renderizarTabela();
+}
+
+// Exportar para Excel
+function exportarParaExcel() {
+    if (dadosFiltrados.length === 0) {
+        mostrarNotificacao('Não há dados para exportar', 'warning');
+        return;
+    }
+    
+    const dadosExportar = dadosFiltrados.map(d => ({
+        'Nº Solicitação': d.numeroSolicitacao,
+        'Data Solicitação': d.dataSolicitacao,
+        'Nº Prontuário': d.prontuario,
+        'Telefone': d.telefone,
+        'Unidade Solicitante': d.unidadeSolicitante,
+        'CBO Especialidade': d.cboEspecialidade,
+        'Data Início Pendência': d.dataInicioPendencia,
+        'Status': d.status
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(dadosExportar);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
+    
+    const dataAtual = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `Pendencias_Eldorado_${dataAtual}.xlsx`);
+    
+    mostrarNotificacao('Arquivo Excel exportado com sucesso!', 'success');
+}
+
+// Mostrar carregamento
+function mostrarCarregamento(mostrar) {
+    const tbody = document.getElementById('tabelaBody');
+    if (mostrar) {
+        tbody.innerHTML = '<tr><td colspan="8" class="loading-cell">Carregando dados...</td></tr>';
+    }
+}
+
+// Mostrar notificação
+function mostrarNotificacao(mensagem, tipo = 'info') {
+    // Criar elemento de notificação
+    const notif = document.createElement('div');
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${tipo === 'success' ? '#28a745' : tipo === 'error' ? '#dc3545' : '#4a90e2'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        font-weight: 600;
+    `;
+    notif.textContent = mensagem;
+    
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// Adicionar animações CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
