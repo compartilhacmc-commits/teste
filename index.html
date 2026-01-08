@@ -1,145 +1,208 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel Vivver - Distrito Sanitário Eldorado</title>
-
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset/dist/reset.min.css">
-  <link rel="stylesheet" href="./styles.css" />
-
-  <!-- Tom Select (multi-select bonito) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
-
-  <!-- Chart.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- XLSX (export Excel) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <!-- Tom Select -->
-  <script defer src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-
-  <script defer src="./app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Eldorado - Controle de Pendências</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="topbar__inner container">
-      <div class="topbar__titles">
-        <h1 class="topbar__h1">DIRETORIA DE REGULAÇÃO</h1>
-        <h2 class="topbar__h2">CENTRAL DE MARCAÇÃO DE CONSULTAS/DISTRITO SANITÁRIO ELDORADO</h2>
-        <h3 class="topbar__h3">CONTROLE DE PENDÊNCIAS/SOLICITAÇÕES/SISTEMA VIVVER</h3>
-        <p class="topbar__signature">Página Criada por Ana P. A. Silva/Ref. Vivver/Distrito Sanitário Eldorado Matr.201704</p>
-      </div>
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">
+                DIRETORIA DE REGULAÇÃO<br>
+                CENTRAL DE MARCAÇÃO DE CONSULTAS/DISTRITO SANITÁRIO ELDORADO<br>
+                CONTROLE DE PENDÊNCIAS/SOLICITAÇÕES/SISTEMA VIVVER
+            </h1>
+            <p class="header-signature">
+                Página Criada por Ana P. A. Silva/Ref. Vivver/Distrito Sanitário Eldorado Matr.201704
+            </p>
+        </div>
+    </header>
 
-      <div class="topbar__status">
-        <span class="dot dot--ok" aria-hidden="true"></span>
-        <span id="connStatus" class="muted">Conectado</span>
-      </div>
+    <!-- Container Principal -->
+    <div class="container">
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Conectado</span>
+            </div>
+            <button id="btnAtualizar" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+                Atualizar
+            </button>
+            <button id="btnLimparFiltros" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Limpar Filtros
+            </button>
+            <button id="btnExportar" class="btn btn-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Excel
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h2 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                Filtros
+            </h2>
+            <div class="filters-grid">
+                <div class="filter-item">
+                    <label for="filtroUnidade">Unidade de Saúde:</label>
+                    <select id="filtroUnidade" class="filter-select" multiple>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filtroPrestador">Prestador:</label>
+                    <select id="filtroPrestador" class="filter-select" multiple>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filtroEspecialidade">Especialidade:</label>
+                    <select id="filtroEspecialidade" class="filter-select" multiple>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filtroStatus">Status:</label>
+                    <select id="filtroStatus" class="filter-select" multiple>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards-grid">
+            <div class="card card-primary">
+                <div class="card-icon">📊</div>
+                <div class="card-content">
+                    <h3 class="card-title">Total de Pendências</h3>
+                    <p class="card-value" id="cardTotal">0</p>
+                </div>
+            </div>
+            <div class="card card-warning">
+                <div class="card-icon">⚠️</div>
+                <div class="card-content">
+                    <h3 class="card-title">Vencendo em 15 dias</h3>
+                    <p class="card-value" id="cardVenc15">0</p>
+                </div>
+            </div>
+            <div class="card card-danger">
+                <div class="card-icon">🔴</div>
+                <div class="card-content">
+                    <h3 class="card-title">Vencendo em 30 dias</h3>
+                    <p class="card-value" id="cardVenc30">0</p>
+                </div>
+            </div>
+            <div class="card card-info">
+                <div class="card-icon">📈</div>
+                <div class="card-content">
+                    <h3 class="card-title">Porcentagem Filtrada</h3>
+                    <p class="card-value" id="cardPorcentagem">100%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências por Unidade de Saúde</h3>
+                <canvas id="chartUnidades"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências por Especialidade</h3>
+                <canvas id="chartEspecialidades"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráficos de Vencimento -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências Vencendo - 15 Dias</h3>
+                <canvas id="chartVenc15"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Pendências Vencendo - 30 Dias</h3>
+                <canvas id="chartVenc30"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-section">
+            <h2 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                Todas as Pendências
+            </h2>
+            <div class="table-controls">
+                <label>
+                    Exibir
+                    <select id="pageSize">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    resultados por página
+                </label>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table" id="tabelaPendencias">
+                    <thead>
+                        <tr>
+                            <th>Nº Solicitação</th>
+                            <th>Data Solicitação</th>
+                            <th>Nº Prontuário</th>
+                            <th>Telefone</th>
+                            <th>Unidade Solicitante</th>
+                            <th>CBO Especialidade</th>
+                            <th>Data Início Pendência</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBody">
+                        <tr>
+                            <td colspan="8" class="loading-cell">Carregando dados...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-pagination">
+                <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0 registros</div>
+                <div class="pagination-buttons" id="paginationButtons"></div>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <main class="container">
-    <section class="panel">
-      <div class="panel__toolbar">
-        <div class="toolbar__left">
-          <button id="btnRefresh" class="btn btn--primary" type="button">Atualizar</button>
-          <button id="btnClear" class="btn btn--ghost" type="button">Limpar filtros</button>
-          <button id="btnExcel" class="btn btn--success" type="button">Excel</button>
-        </div>
-        <div class="toolbar__right">
-          <small id="lastUpdate" class="muted"></small>
-        </div>
-      </div>
+    <!-- Rodapé -->
+    <footer class="footer">
+        <p>DIRETORIA DE REGULAÇÃO</p>
+        <p>CENTRAL DE MARCAÇÃO DE CONSULTAS</p>
+        <p>DISTRITO SANITÁRIO ELDORADO</p>
+    </footer>
 
-      <div class="filters">
-        <div class="field">
-          <label for="fUnidade">Unidade Solicitante</label>
-          <select id="fUnidade" multiple placeholder="Selecione..."></select>
-        </div>
-        <div class="field">
-          <label for="fEspecialidade">CBO Especialidade</label>
-          <select id="fEspecialidade" multiple placeholder="Selecione..."></select>
-        </div>
-        <div class="field">
-          <label for="fStatus">Status</label>
-          <select id="fStatus" multiple placeholder="Selecione..."></select>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid cards">
-      <article class="card">
-        <div class="card__label">Total de Pendências</div>
-        <div id="kpiTotal" class="card__value">0</div>
-        <div class="card__hint muted">Considera filtros aplicados</div>
-      </article>
-
-      <article class="card">
-        <div class="card__label">Vencendo em 15 dias</div>
-        <div id="kpi15" class="card__value">0</div>
-        <div class="card__hint muted">Base: Data Início da Pendência</div>
-      </article>
-
-      <article class="card">
-        <div class="card__label">Vencendo em 30 dias</div>
-        <div id="kpi30" class="card__value">0</div>
-        <div class="card__hint muted">Base: Data Início da Pendência</div>
-      </article>
-
-      <article class="card">
-        <div class="card__label">% de Pendências (filtrado)</div>
-        <div id="kpiPct" class="card__value">0%</div>
-        <div class="card__hint muted">Filtrado / Total carregado</div>
-      </article>
-    </section>
-
-    <section class="grid charts">
-      <article class="panel">
-        <div class="panel__title">Pendências por Unidade Solicitante</div>
-        <canvas id="chartUnidade" height="120"></canvas>
-      </article>
-
-      <article class="panel">
-        <div class="panel__title">Pendências por CBO Especialidade</div>
-        <canvas id="chartCbo" height="120"></canvas>
-      </article>
-    </section>
-
-    <section class="panel">
-      <div class="panel__title">Pendências (lista)</div>
-      <div class="tableWrap">
-        <table class="table" id="tbl">
-          <thead>
-            <tr>
-              <th>Número da Solicitação</th>
-              <th>Data da Solicitação</th>
-              <th>Nº Prontuário</th>
-              <th>Telefone</th>
-              <th>Unidade Solicitante</th>
-              <th>CBO Especialidade</th>
-              <th>Data Início da Pendência</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tblBody"></tbody>
-        </table>
-      </div>
-
-      <div class="panel__footer muted">
-        <span id="countRows"></span>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container footer__inner">
-      <div>DIRETORIA DE REGULAÇÃO</div>
-      <div>CENTRAL DE MARCAÇÃO DE CONSULTAS</div>
-      <div>DISTRITO SANITÁRIO ELDORADO</div>
-    </div>
-  </footer>
+    <script src="script.js"></script>
 </body>
 </html>
