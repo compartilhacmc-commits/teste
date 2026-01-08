@@ -1,24 +1,48 @@
-Painel de Controle - Central de Marcação de Consultas
-📋 Descrição
-Painel automatizado, responsivo e moderno para controle de pendências e solicitações do Sistema Vivver - Distrito Sanitário Eldorado.
+Dashboard Eldorado - Controle de Pendências
+Dashboard automatizado e responsivo para controle de pendências do Distrito Sanitário Eldorado.
 
-🚀 Funcionalidades
-✨ Recursos Principais
-Atualização automática dos dados do Google Sheets
-Filtros inteligentes com seleção múltipla:
-Por Unidade de Saúde
-Por Especialidade (CBO)
-Por Status
-Cards informativos com métricas em tempo real:
+🚀 Características
+Design Moderno e Responsivo: Interface limpa e profissional
+Conexão em Tempo Real: Integração direta com Google Sheets
+Filtros Inteligentes: Múltipla seleção por Unidade, Prestador, Especialidade e Status
+Cards Dinâmicos: Indicadores em tempo real de pendências
+Gráficos Interativos: Visualização por unidade e especialidade
+Tabela Paginada: Exibição organizada dos dados
+Exportação Excel: Baixe os dados filtrados em Excel
+📋 Pré-requisitos
+Navegador web moderno (Chrome, Firefox, Edge, Safari)
+Conexão com internet para carregar dados do Google Sheets
+🔧 Instalação
+Faça o download dos arquivos:
+
+index.html
+styles.css
+script.js
+Coloque todos os arquivos na mesma pasta
+
+Abra o arquivo index.html em seu navegador
+
+📊 Funcionalidades
+Filtros
+Unidade de Saúde: Filtre por unidades solicitantes
+Prestador: Filtre por prestadores
+Especialidade: Filtre por CBO Especialidade
+Status: Filtre por status das pendências
+Cards de Indicadores
 Total de Pendências
-Guias vencendo em 15 dias
-Guias vencendo em 30 dias
-Porcentagem de dados filtrados
-Gráficos interativos:
-Barras verticais (azul) - Pendências por Unidade
-Barras verticais (verde) - Pendências por Especialidade
-Pizza - Análise de vencimentos em 15 dias
-Pizza - Análise de vencimentos em 30 dias
-Tabela detalhada com todas as informações das pendências
-Exportação para Excel dos dados filtrados
-Design responsivo adaptável a qualquer dispositivo
+Vencendo em 15 dias
+Vencendo em 30 dias
+Porcentagem filtrada
+Gráficos
+Pendências por Unidade de Saúde (barras azuis)
+Pendências por Especialidade (barras verdes)
+Pendências vencendo em 15 dias (pizza)
+Pendências vencendo em 30 dias (pizza)
+Tabela
+Visualização completa dos dados
+Paginação customizável
+Ordenação por colunas
+Ações
+Atualizar: Recarrega os dados do Google Sheets
+Limpar Filtros: Remove todos os filtros aplicados
+Exportar Excel: Baixa os dados filtrados em formato Excel
