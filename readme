@@ -1,0 +1,24 @@
+Painel de Controle - Central de Marcação de Consultas
+📋 Descrição
+Painel automatizado, responsivo e moderno para controle de pendências e solicitações do Sistema Vivver - Distrito Sanitário Eldorado.
+
+🚀 Funcionalidades
+✨ Recursos Principais
+Atualização automática dos dados do Google Sheets
+Filtros inteligentes com seleção múltipla:
+Por Unidade de Saúde
+Por Especialidade (CBO)
+Por Status
+Cards informativos com métricas em tempo real:
+Total de Pendências
+Guias vencendo em 15 dias
+Guias vencendo em 30 dias
+Porcentagem de dados filtrados
+Gráficos interativos:
+Barras verticais (azul) - Pendências por Unidade
+Barras verticais (verde) - Pendências por Especialidade
+Pizza - Análise de vencimentos em 15 dias
+Pizza - Análise de vencimentos em 30 dias
+Tabela detalhada com todas as informações das pendências
+Exportação para Excel dos dados filtrados
+Design responsivo adaptável a qualquer dispositivo
