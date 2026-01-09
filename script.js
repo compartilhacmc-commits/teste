@@ -719,9 +719,7 @@ function downloadExcel() {
     }
     
     const exportData = filteredData.map(item => ({
-        'Solicitação': getColumnValue(item, [
-            'Solicitação'
-        ], ''),
+        'Solicitação': getColumnValue(item, ['Solicitação'], ''),
         'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação'], ''),
         'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'N° Prontuário'], ''),
         'Telefone': item['Telefone'] || '',
