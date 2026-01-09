@@ -3,7 +3,6 @@
 // ===================================
 const SHEET_ID = '1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4';
 const SHEET_NAME = 'PENDÊNCIAS ELDORADO';
-// URL corrigida com encoding do nome da aba
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
 // ===================================
@@ -39,20 +38,17 @@ async function loadData() {
         const csvText = await response.text();
         console.log('Dados CSV recebidos, primeiros 500 caracteres:', csvText.substring(0, 500));
         
-        // Parse CSV
         const rows = parseCSV(csvText);
         
         if (rows.length < 2) {
             throw new Error('Planilha vazia ou sem dados');
         }
         
-        // Cabeçalhos (primeira linha)
         const headers = rows[0];
         console.log('Cabeçalhos encontrados:', headers);
         
-        // Converter linhas em objetos
         allData = rows.slice(1)
-            .filter(row => row.length > 1 && row[0]) // Filtrar linhas vazias
+            .filter(row => row.length > 1 && row[0])
             .map(row => {
                 const obj = {};
                 headers.forEach((header, index) => {
@@ -66,7 +62,6 @@ async function loadData() {
         
         filteredData = [...allData];
         
-        // Inicializar interface
         populateFilters();
         updateDashboard();
         
@@ -81,7 +76,7 @@ async function loadData() {
 }
 
 // ===================================
-// PARSE CSV (COM SUPORTE A ASPAS)
+// PARSE CSV
 // ===================================
 function parseCSV(text) {
     const rows = [];
@@ -95,26 +90,21 @@ function parseCSV(text) {
         
         if (char === '"') {
             if (insideQuotes && nextChar === '"') {
-                // Aspas duplas dentro de aspas
                 currentCell += '"';
-                i++; // Pular próxima aspa
+                i++;
             } else {
-                // Alternar estado de aspas
                 insideQuotes = !insideQuotes;
             }
         } else if (char === ',' && !insideQuotes) {
-            // Fim de célula
             currentRow.push(currentCell.trim());
             currentCell = '';
         } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-            // Fim de linha
             if (currentCell || currentRow.length > 0) {
                 currentRow.push(currentCell.trim());
                 rows.push(currentRow);
                 currentRow = [];
                 currentCell = '';
             }
-            // Pular \r\n
             if (char === '\r' && nextChar === '\n') {
                 i++;
             }
@@ -123,7 +113,6 @@ function parseCSV(text) {
         }
     }
     
-    // Adicionar última célula e linha
     if (currentCell || currentRow.length > 0) {
         currentRow.push(currentCell.trim());
         rows.push(currentRow);
@@ -148,7 +137,6 @@ function showLoading(show) {
 // POPULAR FILTROS
 // ===================================
 function populateFilters() {
-    // Status
     const statusList = [...new Set(allData.map(item => item['Status']))].filter(Boolean).sort();
     const selectStatus = document.getElementById('filterStatus');
     selectStatus.innerHTML = '<option value="">Todos</option>';
@@ -159,7 +147,6 @@ function populateFilters() {
         selectStatus.appendChild(option);
     });
     
-    // Unidades
     const unidades = [...new Set(allData.map(item => item['Unidade Solicitante']))].filter(Boolean).sort();
     const selectUnidade = document.getElementById('filterUnidade');
     selectUnidade.innerHTML = '<option value="">Todas</option>';
@@ -170,7 +157,6 @@ function populateFilters() {
         selectUnidade.appendChild(option);
     });
     
-    // Especialidades
     const especialidades = [...new Set(allData.map(item => item['Cbo Especialidade']))].filter(Boolean).sort();
     const selectEspecialidade = document.getElementById('filterEspecialidade');
     selectEspecialidade.innerHTML = '<option value="">Todas</option>';
@@ -181,7 +167,6 @@ function populateFilters() {
         selectEspecialidade.appendChild(option);
     });
     
-    // Prestador (NOVO FILTRO)
     const prestadores = [...new Set(allData.map(item => item['Prestador']))].filter(Boolean).sort();
     const selectPrestador = document.getElementById('filterPrestador');
     selectPrestador.innerHTML = '<option value="">Todos</option>';
@@ -241,7 +226,6 @@ function updateCards() {
     const total = allData.length;
     const filtrado = filteredData.length;
     
-    // Calcular pendências por prazo
     const hoje = new Date();
     let pendencias15 = 0;
     let pendencias30 = 0;
@@ -260,7 +244,6 @@ function updateCards() {
         }
     });
     
-    // Atualizar valores dos cards
     document.getElementById('totalPendencias').textContent = total;
     document.getElementById('pendencias15').textContent = pendencias15;
     document.getElementById('pendencias30').textContent = pendencias30;
@@ -273,14 +256,13 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
-    // Gráfico de Unidades (ESTILO HORIZONTAL VERDE)
+    // Gráfico de Unidades (HORIZONTAL VERDE)
     const unidadesCount = {};
     filteredData.forEach(item => {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
         unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
     });
     
-    // Ordenar e pegar top 10
     const unidadesLabels = Object.keys(unidadesCount)
         .sort((a, b) => unidadesCount[b] - unidadesCount[a])
         .slice(0, 10);
@@ -288,34 +270,31 @@ function updateCharts() {
     
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues);
     
-    // Gráfico de Especialidades (MANTÉM VERTICAL)
+    // Gráfico de Especialidades (VERTICAL VERMELHO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
         especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
     });
     
-    // Ordenar e pegar top 10
     const especialidadesLabels = Object.keys(especialidadesCount)
         .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
         .slice(0, 10);
     const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
     
-    createBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#10b981');
+    createBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#e74c3c');
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS HORIZONTAIS (ESTILO DA IMAGEM)
+// GRÁFICO HORIZONTAL (UNIDADES) - VERDE COM VALOR NO MEIO EM BRANCO
 // ===================================
 function createHorizontalBarChart(canvasId, labels, data) {
     const ctx = document.getElementById(canvasId);
     
-    // Destruir gráfico anterior
     if (chartUnidades) {
         chartUnidades.destroy();
     }
     
-    // Criar novo gráfico HORIZONTAL
     chartUnidades = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -323,13 +302,13 @@ function createHorizontalBarChart(canvasId, labels, data) {
             datasets: [{
                 label: 'Quantidade',
                 data: data,
-                backgroundColor: '#48bb78', // Verde similar à imagem
+                backgroundColor: '#48bb78',
                 borderWidth: 0,
                 borderRadius: 4
             }]
         },
         options: {
-            indexAxis: 'y', // HORIZONTAL
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -337,15 +316,15 @@ function createHorizontalBarChart(canvasId, labels, data) {
                     display: false
                 },
                 tooltip: {
-                    enabled: false // Desabilitar tooltip
+                    enabled: false
                 },
                 datalabels: {
-                    display: false // Garantir que datalabels não apareça
+                    display: false
                 }
             },
             scales: {
                 x: {
-                    display: false, // Ocultar eixo X
+                    display: false,
                     grid: {
                         display: false
                     }
@@ -378,7 +357,7 @@ function createHorizontalBarChart(canvasId, labels, data) {
                     const meta = chart.getDatasetMeta(i);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
-                            // Configurar estilo do texto
+                            // VALOR NO MEIO DA BARRA, BRANCO E NEGRITO
                             ctx.fillStyle = '#ffffff';
                             ctx.font = 'bold 14px Arial';
                             ctx.textAlign = 'center';
@@ -386,8 +365,8 @@ function createHorizontalBarChart(canvasId, labels, data) {
                             
                             const dataString = dataset.data[index].toString();
                             
-                            // Posicionar valor DENTRO da barra, próximo ao final
-                            const xPos = element.x - 15;
+                            // Calcular posição no MEIO da barra
+                            const xPos = element.x / 2;
                             const yPos = element.y;
                             
                             ctx.fillText(dataString, xPos, yPos);
@@ -400,17 +379,15 @@ function createHorizontalBarChart(canvasId, labels, data) {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS VERTICAL (PARA ESPECIALIDADES)
+// GRÁFICO VERTICAL (ESPECIALIDADES) - VERMELHO
 // ===================================
 function createBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
     
-    // Destruir gráfico anterior
     if (chartEspecialidades) {
         chartEspecialidades.destroy();
     }
     
-    // Criar novo gráfico
     chartEspecialidades = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -523,7 +500,6 @@ function updateTable() {
         tbody.appendChild(row);
     });
     
-    // Atualizar rodapé
     const total = allData.length;
     const showing = filteredData.length;
     footer.textContent = `Mostrando de 1 até ${showing} de ${total} registros`;
@@ -535,13 +511,11 @@ function updateTable() {
 function parseDate(dateString) {
     if (!dateString) return null;
     
-    // Tentar DD/MM/YYYY
     let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (match) {
         return new Date(match[3], match[2] - 1, match[1]);
     }
     
-    // Tentar YYYY-MM-DD
     match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
         return new Date(match[1], match[2] - 1, match[3]);
@@ -579,7 +553,6 @@ function downloadExcel() {
         return;
     }
     
-    // Preparar dados
     const exportData = filteredData.map(item => ({
         'Nº Solicitação': item['N° Solicitação'] || item['Número da Solicitação'] || '',
         'Data Solicitação': item['Data da Solicitação'] || '',
@@ -592,18 +565,15 @@ function downloadExcel() {
         'Prestador': item['Prestador'] || ''
     }));
     
-    // Criar workbook
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
     
-    // Larguras das colunas
     ws['!cols'] = [
         { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
         { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 }, { wch: 25 }
     ];
     
-    // Download
     const hoje = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `Pendencias_Eldorado_${hoje}.xlsx`);
 }
