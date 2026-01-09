@@ -13,6 +13,7 @@ let filteredData = [];
 let chartUnidades = null;
 let chartEspecialidades = null;
 let chartStatus = null;
+let chartPizzaStatus = null; // NOVO
 
 // ===================================
 // INICIALIZAÇÃO
@@ -293,6 +294,7 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
+    // Gráfico de Unidades (HORIZONTAL VERDE)
     const unidadesCount = {};
     filteredData.forEach(item => {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
@@ -306,6 +308,7 @@ function updateCharts() {
     
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
     
+    // Gráfico de Especialidades (HORIZONTAL VERMELHO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
@@ -319,6 +322,7 @@ function updateCharts() {
     
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
     
+    // Gráfico de Status (HORIZONTAL LARANJA)
     const statusCount = {};
     filteredData.forEach(item => {
         const status = item['Status'] || 'Não informado';
@@ -330,6 +334,9 @@ function updateCharts() {
     const statusValues = statusLabels.map(label => statusCount[label]);
     
     createHorizontalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
+    
+    // NOVO: Gráfico de Pizza por Status
+    createPieChart('chartPizzaStatus', statusLabels, statusValues);
 }
 
 // ===================================
@@ -439,6 +446,99 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
 }
 
 // ===================================
+// CRIAR GRÁFICO DE PIZZA (NOVO)
+// ===================================
+function createPieChart(canvasId, labels, data) {
+    const ctx = document.getElementById(canvasId);
+    
+    if (chartPizzaStatus) {
+        chartPizzaStatus.destroy();
+    }
+    
+    // Paleta de cores vibrantes
+    const colors = [
+        '#3b82f6', // Azul
+        '#ef4444', // Vermelho
+        '#10b981', // Verde
+        '#f59e0b', // Amarelo
+        '#8b5cf6', // Roxo
+        '#ec4899', // Rosa
+        '#06b6d4', // Ciano
+        '#f97316', // Laranja
+        '#6366f1', // Índigo
+        '#84cc16'  // Lima
+    ];
+    
+    // Calcular total e percentuais
+    const total = data.reduce((sum, val) => sum + val, 0);
+    const percentages = data.map(val => ((val / total) * 100).toFixed(1));
+    
+    chartPizzaStatus = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
+                        color: '#1f2937',
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        generateLabels: function(chart) {
+                            const datasets = chart.data.datasets;
+                            return chart.data.labels.map((label, i) => {
+                                const value = datasets[0].data[i];
+                                const percentage = percentages[i];
+                                return {
+                                    text: `${label}: ${value} (${percentage}%)`,
+                                    fillStyle: datasets[0].backgroundColor[i],
+                                    hidden: false,
+                                    index: i
+                                };
+                            });
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ===================================
 // ATUALIZAR TABELA
 // ===================================
 function updateTable() {
@@ -455,7 +555,7 @@ function updateTable() {
     filteredData.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${item['N° Solicitação'] || item['Número da Solicitação'] || item['Nº Solicitação'] || '-'}</td>
+            <td>${item['Numero Solicitação'] || item['Numero da Solicitação'] || item['Numero da Solicitação'] || '-'}</td>
             <td>${formatDate(item['Data da Solicitação'])}</td>
             <td>${item['Nº Prontuário'] || item['N° Prontuário'] || '-'}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -525,7 +625,7 @@ function downloadExcel() {
     }
     
     const exportData = filteredData.map(item => ({
-        'Nº Solicitação': item['N° Solicitação'] || item['Número da Solicitação'] || item['Nº Solicitação'] || '',
+        'Numero da Solicitação': item['Numero da Solicitação'] || item['Numero da Solicitação'] || item['Numero da Solicitação'] || '',
         'Data Solicitação': item['Data da Solicitação'] || '',
         'Nº Prontuário': item['Nº Prontuário'] || item['N° Prontuário'] || '',
         'Telefone': item['Telefone'] || '',
