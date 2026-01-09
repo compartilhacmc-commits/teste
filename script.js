@@ -273,7 +273,7 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
-    // Gráfico de Unidades
+    // Gráfico de Unidades (ESTILO HORIZONTAL VERDE)
     const unidadesCount = {};
     filteredData.forEach(item => {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
@@ -286,9 +286,9 @@ function updateCharts() {
         .slice(0, 10);
     const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
     
-    createBarChart('chartUnidades', unidadesLabels, unidadesValues, '#2563eb');
+    createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues);
     
-    // Gráfico de Especialidades
+    // Gráfico de Especialidades (MANTÉM VERTICAL)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
@@ -305,20 +305,113 @@ function updateCharts() {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS
+// CRIAR GRÁFICO DE BARRAS HORIZONTAIS (ESTILO DA IMAGEM)
+// ===================================
+function createHorizontalBarChart(canvasId, labels, data) {
+    const ctx = document.getElementById(canvasId);
+    
+    // Destruir gráfico anterior
+    if (chartUnidades) {
+        chartUnidades.destroy();
+    }
+    
+    // Criar novo gráfico HORIZONTAL
+    chartUnidades = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Quantidade',
+                data: data,
+                backgroundColor: '#48bb78', // Verde similar à imagem
+                borderWidth: 0,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y', // HORIZONTAL
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false // Desabilitar tooltip
+                },
+                datalabels: {
+                    display: false // Garantir que datalabels não apareça
+                }
+            },
+            scales: {
+                x: {
+                    display: false, // Ocultar eixo X
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        },
+                        color: '#4a5568',
+                        padding: 8
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    right: 40
+                }
+            }
+        },
+        plugins: [{
+            id: 'customLabels',
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach(function(dataset, i) {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden) {
+                        meta.data.forEach(function(element, index) {
+                            // Configurar estilo do texto
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 14px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            const dataString = dataset.data[index].toString();
+                            
+                            // Posicionar valor DENTRO da barra, próximo ao final
+                            const xPos = element.x - 15;
+                            const yPos = element.y;
+                            
+                            ctx.fillText(dataString, xPos, yPos);
+                        });
+                    }
+                });
+            }
+        }]
+    });
+}
+
+// ===================================
+// CRIAR GRÁFICO DE BARRAS VERTICAL (PARA ESPECIALIDADES)
 // ===================================
 function createBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
     
     // Destruir gráfico anterior
-    if (canvasId === 'chartUnidades' && chartUnidades) {
-        chartUnidades.destroy();
-    } else if (canvasId === 'chartEspecialidades' && chartEspecialidades) {
+    if (chartEspecialidades) {
         chartEspecialidades.destroy();
     }
     
     // Criar novo gráfico
-    const newChart = new Chart(ctx, {
+    chartEspecialidades = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
@@ -349,14 +442,7 @@ function createBarChart(canvasId, labels, data, color) {
                     displayColors: false
                 },
                 datalabels: {
-                    anchor: 'end',
-                    align: 'end',
-                    color: '#1f2937',
-                    font: {
-                        weight: 'bold',
-                        size: 12
-                    },
-                    formatter: (value) => value
+                    display: false
                 }
             },
             scales: {
@@ -406,13 +492,6 @@ function createBarChart(canvasId, labels, data, color) {
             }
         }]
     });
-    
-    // Salvar referência
-    if (canvasId === 'chartUnidades') {
-        chartUnidades = newChart;
-    } else if (canvasId === 'chartEspecialidades') {
-        chartEspecialidades = newChart;
-    }
 }
 
 // ===================================
