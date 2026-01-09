@@ -13,7 +13,7 @@ let filteredData = [];
 let chartUnidades = null;
 let chartEspecialidades = null;
 let chartStatus = null;
-let chartPizzaStatus = null; // NOVO
+let chartPizzaStatus = null;
 
 // ===================================
 // INICIALIZAÇÃO
@@ -340,7 +340,7 @@ function updateCharts() {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS HORIZONTAIS
+// CRIAR GRÁFICO DE BARRAS HORIZONTAIS - CORRIGIDO
 // ===================================
 function createHorizontalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
@@ -376,10 +376,17 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
                     display: false
                 },
                 tooltip: {
-                    enabled: false
-                },
-                datalabels: {
-                    display: false
+                    enabled: true,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 12,
+                    cornerRadius: 8
                 }
             },
             scales: {
@@ -405,7 +412,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
             },
             layout: {
                 padding: {
-                    right: 40
+                    right: 50
                 }
             }
         },
@@ -417,13 +424,14 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
                     const meta = chart.getDatasetMeta(i);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
-                            ctx.fillStyle = '#ffffff';
+                            // CORREÇÃO: LEGENDAS FORA DAS BARRAS, COR PRETA, NEGRITO
+                            ctx.fillStyle = '#000000';
                             ctx.font = 'bold 14px Arial';
-                            ctx.textAlign = 'center';
+                            ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
                             
                             const dataString = dataset.data[index].toString();
-                            const xPos = element.x - 15;
+                            const xPos = element.x + 10; // FORA DA BARRA
                             const yPos = element.y;
                             
                             ctx.fillText(dataString, xPos, yPos);
@@ -446,7 +454,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE PIZZA (NOVO)
+// CRIAR GRÁFICO DE PIZZA - CORRIGIDO
 // ===================================
 function createPieChart(canvasId, labels, data) {
     const ctx = document.getElementById(canvasId);
@@ -457,19 +465,10 @@ function createPieChart(canvasId, labels, data) {
     
     // Paleta de cores vibrantes
     const colors = [
-        '#3b82f6', // Azul
-        '#ef4444', // Vermelho
-        '#10b981', // Verde
-        '#f59e0b', // Amarelo
-        '#8b5cf6', // Roxo
-        '#ec4899', // Rosa
-        '#06b6d4', // Ciano
-        '#f97316', // Laranja
-        '#6366f1', // Índigo
-        '#84cc16'  // Lima
+        '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+        '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#84cc16'
     ];
     
-    // Calcular total e percentuais
     const total = data.reduce((sum, val) => sum + val, 0);
     const percentages = data.map(val => ((val / total) * 100).toFixed(1));
     
@@ -515,6 +514,7 @@ function createPieChart(canvasId, labels, data) {
                     }
                 },
                 tooltip: {
+                    enabled: true,
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleFont: {
                         size: 14,
@@ -534,12 +534,40 @@ function createPieChart(canvasId, labels, data) {
                     }
                 }
             }
-        }
+        },
+        plugins: [{
+            id: 'customPieLabels',
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta.hidden) {
+                        meta.data.forEach(function(element, index) {
+                            // CORREÇÃO: LEGENDAS DENTRO DO GRÁFICO, COR BRANCA
+                            const data = dataset.data[index];
+                            const percentage = percentages[index];
+                            
+                            // Só mostra se for maior que 5% para não poluir
+                            if (parseFloat(percentage) > 5) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.font = 'bold 13px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                
+                                const position = element.tooltipPosition();
+                                ctx.fillText(`${data}`, position.x, position.y - 8);
+                                ctx.fillText(`${percentage}%`, position.x, position.y + 8);
+                            }
+                        });
+                    }
+                });
+            }
+        }]
     });
 }
 
 // ===================================
-// ATUALIZAR TABELA
+// ATUALIZAR TABELA - CORRIGIDA
 // ===================================
 function updateTable() {
     const tbody = document.getElementById('tableBody');
@@ -554,8 +582,17 @@ function updateTable() {
     
     filteredData.forEach(item => {
         const row = document.createElement('tr');
+        
+        // CORREÇÃO: Busca múltiplas variações possíveis do nome da coluna
+        const numeroSolicitacao = item['Numero da Solicitação'] || 
+                                  item['Numero Solicitação'] || 
+                                  item['Número da Solicitação'] || 
+                                  item['Número Solicitação'] ||
+                                  item['N° da Solicitação'] ||
+                                  item['N° Solicitação'] || '-';
+        
         row.innerHTML = `
-            <td>${item['Numero Solicitação'] || item['Numero da Solicitação'] || item['Numero da Solicitação'] || '-'}</td>
+            <td>${numeroSolicitacao}</td>
             <td>${formatDate(item['Data da Solicitação'])}</td>
             <td>${item['Nº Prontuário'] || item['N° Prontuário'] || '-'}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -616,7 +653,7 @@ function refreshData() {
 }
 
 // ===================================
-// DOWNLOAD EXCEL
+// DOWNLOAD EXCEL - CORRIGIDO
 // ===================================
 function downloadExcel() {
     if (filteredData.length === 0) {
@@ -625,7 +662,7 @@ function downloadExcel() {
     }
     
     const exportData = filteredData.map(item => ({
-        'Numero da Solicitação': item['Numero da Solicitação'] || item['Numero da Solicitação'] || item['Numero da Solicitação'] || '',
+        'Numero da Solicitação': item['Numero da Solicitação'] || item['Numero Solicitação'] || item['N° Solicitação'] || '',
         'Data Solicitação': item['Data da Solicitação'] || '',
         'Nº Prontuário': item['Nº Prontuário'] || item['N° Prontuário'] || '',
         'Telefone': item['Telefone'] || '',
