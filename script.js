@@ -28,78 +28,6 @@ function getColumnValue(item, possibleNames, defaultValue = '-') {
 }
 
 // ===================================
-// MULTISELECT (CHECKBOX) HELPERS
-// ===================================
-function toggleMultiSelect(id) {
-    document.getElementById(id).classList.toggle('open');
-}
-
-// fecha dropdown ao clicar fora
-document.addEventListener('click', (e) => {
-    document.querySelectorAll('.multi-select').forEach(ms => {
-        if (!ms.contains(e.target)) ms.classList.remove('open');
-    });
-});
-
-function escapeHtml(str) {
-    return String(str)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
-
-function renderMultiSelect(panelId, values, onChange) {
-    const panel = document.getElementById(panelId);
-    panel.innerHTML = '';
-
-    const actions = document.createElement('div');
-    actions.className = 'ms-actions';
-    actions.innerHTML = `
-      <button type="button" class="ms-all">Marcar todos</button>
-      <button type="button" class="ms-none">Limpar</button>
-    `;
-    panel.appendChild(actions);
-
-    const btnAll = actions.querySelector('.ms-all');
-    const btnNone = actions.querySelector('.ms-none');
-
-    btnAll.addEventListener('click', () => {
-        panel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-        onChange();
-    });
-
-    btnNone.addEventListener('click', () => {
-        panel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        onChange();
-    });
-
-    values.forEach(v => {
-        const item = document.createElement('label');
-        item.className = 'ms-item';
-        item.innerHTML = `
-          <input type="checkbox" value="${escapeHtml(v)}">
-          <span>${escapeHtml(v)}</span>
-        `;
-        item.querySelector('input').addEventListener('change', onChange);
-        panel.appendChild(item);
-    });
-}
-
-function getSelectedFromPanel(panelId) {
-    const panel = document.getElementById(panelId);
-    return [...panel.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
-}
-
-function setMultiSelectText(textId, selected, fallbackLabel) {
-    const el = document.getElementById(textId);
-    if (!selected || selected.length === 0) el.textContent = fallbackLabel;
-    else if (selected.length === 1) el.textContent = selected[0];
-    else el.textContent = `${selected.length} selecionados`;
-}
-
-// ===================================
 // INICIALIZAÇÃO
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -213,72 +141,85 @@ function parseCSV(text) {
 // ===================================
 function showLoading(show) {
     const overlay = document.getElementById('loadingOverlay');
-    if (show) overlay.classList.add('active');
-    else overlay.classList.remove('active');
+    if (show) {
+        overlay.classList.add('active');
+    } else {
+        overlay.classList.remove('active');
+    }
 }
 
 // ===================================
-// POPULAR FILTROS (MULTISELECT)
+// POPULAR FILTROS
 // ===================================
 function populateFilters() {
     const statusList = [...new Set(allData.map(item => item['Status']))].filter(Boolean).sort();
-    renderMultiSelect('msStatusPanel', statusList, applyFilters);
+    const selectStatus = document.getElementById('filterStatus');
+    selectStatus.innerHTML = '<option value="">Todos</option>';
+    statusList.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        selectStatus.appendChild(option);
+    });
 
     const unidades = [...new Set(allData.map(item => item['Unidade Solicitante']))].filter(Boolean).sort();
-    renderMultiSelect('msUnidadePanel', unidades, applyFilters);
+    const selectUnidade = document.getElementById('filterUnidade');
+    selectUnidade.innerHTML = '<option value="">Todas</option>';
+    unidades.forEach(unidade => {
+        const option = document.createElement('option');
+        option.value = unidade;
+        option.textContent = unidade;
+        selectUnidade.appendChild(option);
+    });
 
     const especialidades = [...new Set(allData.map(item => item['Cbo Especialidade']))].filter(Boolean).sort();
-    renderMultiSelect('msEspecialidadePanel', especialidades, applyFilters);
+    const selectEspecialidade = document.getElementById('filterEspecialidade');
+    selectEspecialidade.innerHTML = '<option value="">Todas</option>';
+    especialidades.forEach(especialidade => {
+        const option = document.createElement('option');
+        option.value = especialidade;
+        option.textContent = especialidade;
+        selectEspecialidade.appendChild(option);
+    });
 
     const prestadores = [...new Set(allData.map(item => item['Prestador']))].filter(Boolean).sort();
-    renderMultiSelect('msPrestadorPanel', prestadores, applyFilters);
-
-    setMultiSelectText('msStatusText', [], 'Todos');
-    setMultiSelectText('msUnidadeText', [], 'Todas');
-    setMultiSelectText('msEspecialidadeText', [], 'Todas');
-    setMultiSelectText('msPrestadorText', [], 'Todos');
+    const selectPrestador = document.getElementById('filterPrestador');
+    selectPrestador.innerHTML = '<option value="">Todos</option>';
+    prestadores.forEach(prestador => {
+        const option = document.createElement('option');
+        option.value = prestador;
+        option.textContent = prestador;
+        selectPrestador.appendChild(option);
+    });
 }
 
 // ===================================
-// APLICAR FILTROS (MULTISELECT)
+// APLICAR FILTROS
 // ===================================
 function applyFilters() {
-    const statusSel = getSelectedFromPanel('msStatusPanel');
-    const unidadeSel = getSelectedFromPanel('msUnidadePanel');
-    const especialidadeSel = getSelectedFromPanel('msEspecialidadePanel');
-    const prestadorSel = getSelectedFromPanel('msPrestadorPanel');
-
-    setMultiSelectText('msStatusText', statusSel, 'Todos');
-    setMultiSelectText('msUnidadeText', unidadeSel, 'Todas');
-    setMultiSelectText('msEspecialidadeText', especialidadeSel, 'Todas');
-    setMultiSelectText('msPrestadorText', prestadorSel, 'Todos');
+    const status = document.getElementById('filterStatus').value;
+    const unidade = document.getElementById('filterUnidade').value;
+    const especialidade = document.getElementById('filterEspecialidade').value;
+    const prestador = document.getElementById('filterPrestador').value;
 
     filteredData = allData.filter(item => {
-        const okStatus = (statusSel.length === 0) || statusSel.includes(item['Status'] || '');
-        const okUnidade = (unidadeSel.length === 0) || unidadeSel.includes(item['Unidade Solicitante'] || '');
-        const okEsp = (especialidadeSel.length === 0) || especialidadeSel.includes(item['Cbo Especialidade'] || '');
-        const okPrest = (prestadorSel.length === 0) || prestadorSel.includes(item['Prestador'] || '');
-        return okStatus && okUnidade && okEsp && okPrest;
+        return (!status || item['Status'] === status) &&
+               (!unidade || item['Unidade Solicitante'] === unidade) &&
+               (!especialidade || item['Cbo Especialidade'] === especialidade) &&
+               (!prestador || item['Prestador'] === prestador);
     });
 
     updateDashboard();
 }
 
 // ===================================
-// LIMPAR FILTROS (MULTISELECT)
+// LIMPAR FILTROS
 // ===================================
 function clearFilters() {
-    ['msStatusPanel','msUnidadePanel','msEspecialidadePanel','msPrestadorPanel'].forEach(panelId => {
-        const panel = document.getElementById(panelId);
-        if (!panel) return;
-        panel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    });
-
-    setMultiSelectText('msStatusText', [], 'Todos');
-    setMultiSelectText('msUnidadeText', [], 'Todas');
-    setMultiSelectText('msEspecialidadeText', [], 'Todas');
-    setMultiSelectText('msPrestadorText', [], 'Todos');
-
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterUnidade').value = '';
+    document.getElementById('filterEspecialidade').value = '';
+    document.getElementById('filterPrestador').value = '';
     document.getElementById('searchInput').value = '';
 
     filteredData = [...allData];
@@ -345,8 +286,12 @@ function updateCards() {
         if (dataInicio) {
             const diasDecorridos = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
 
-            if (diasDecorridos >= 15 && diasDecorridos < 30) pendencias15++;
-            if (diasDecorridos >= 30) pendencias30++;
+            if (diasDecorridos >= 15 && diasDecorridos < 30) {
+                pendencias15++;
+            }
+            if (diasDecorridos >= 30) {
+                pendencias30++;
+            }
         }
     });
 
@@ -362,7 +307,7 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
-    // Gráfico de Unidades (HORIZONTAL VERDE)
+    // Gráfico de Unidades (HORIZONTAL VERDE) ✅ SEM TOP 25
     const unidadesCount = {};
     filteredData.forEach(item => {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
@@ -370,13 +315,12 @@ function updateCharts() {
     });
 
     const unidadesLabels = Object.keys(unidadesCount)
-        .sort((a, b) => unidadesCount[b] - unidadesCount[a])
-        .slice(0, 50);
+        .sort((a, b) => unidadesCount[b] - unidadesCount[a]); // removido slice
     const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
 
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
 
-    // Gráfico de Especialidades (HORIZONTAL VERMELHO)
+    // Gráfico de Especialidades (HORIZONTAL VERMELHO) ✅ SEM TOP 25
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
@@ -384,8 +328,7 @@ function updateCharts() {
     });
 
     const especialidadesLabels = Object.keys(especialidadesCount)
-        .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
-        .slice(0, 50);
+        .sort((a, b) => especialidadesCount[b] - especialidadesCount[a]); // removido slice
     const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
 
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
@@ -403,7 +346,7 @@ function updateCharts() {
 
     createVerticalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
 
-    // Gráfico de Pizza por Status (legenda "Status + %")
+    // Gráfico de Pizza por Status
     createPieChart('chartPizzaStatus', statusLabels, statusValues);
 }
 
@@ -413,9 +356,15 @@ function updateCharts() {
 function createHorizontalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
 
-    if (canvasId === 'chartUnidades' && chartUnidades) chartUnidades.destroy();
-    if (canvasId === 'chartEspecialidades' && chartEspecialidades) chartEspecialidades.destroy();
-    if (canvasId === 'chartStatus' && chartStatus) chartStatus.destroy();
+    if (canvasId === 'chartUnidades' && chartUnidades) {
+        chartUnidades.destroy();
+    }
+    if (canvasId === 'chartEspecialidades' && chartEspecialidades) {
+        chartEspecialidades.destroy();
+    }
+    if (canvasId === 'chartStatus' && chartStatus) {
+        chartStatus.destroy();
+    }
 
     const chart = new Chart(ctx, {
         type: 'bar',
@@ -488,7 +437,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS VERTICAIS (STATUS) - COM VALOR FORA DA BARRA
+// CRIAR GRÁFICO DE BARRAS VERTICAIS (STATUS)
 // ===================================
 function createVerticalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
@@ -545,28 +494,7 @@ function createVerticalBarChart(canvasId, labels, data, color) {
                     grid: { color: 'rgba(0,0,0,0.06)' }
                 }
             }
-        },
-        plugins: [{
-            id: 'statusValueLabels',
-            afterDatasetsDraw(chart) {
-                const { ctx } = chart;
-                const meta = chart.getDatasetMeta(0);
-                const dataset = chart.data.datasets[0];
-
-                ctx.save();
-                ctx.fillStyle = '#000000';      // preto
-                ctx.font = 'bold 14px Arial';   // negrito
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-
-                meta.data.forEach((bar, i) => {
-                    const value = dataset.data[i];
-                    ctx.fillText(String(value), bar.x, bar.y - 6); // fora/acima
-                });
-
-                ctx.restore();
-            }
-        }]
+        }
     });
 
     chartStatus = chart;
@@ -652,7 +580,9 @@ function createPieChart(canvasId, labels, data) {
                     const meta = chart.getDatasetMeta(datasetIndex);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
+                            const value = dataset.data[index];
                             const percentage = percentages[index];
+
                             if (parseFloat(percentage) > 5) {
                                 ctx.fillStyle = '#ffffff';
                                 ctx.font = 'bold 13px Arial';
@@ -671,7 +601,7 @@ function createPieChart(canvasId, labels, data) {
 }
 
 // ===================================
-// ATUALIZAR TABELA (COM COLUNA Solicitação)
+// ATUALIZAR TABELA (sem coluna Solicitação)
 // ===================================
 function updateTable() {
     const tbody = document.getElementById('tableBody');
@@ -679,18 +609,13 @@ function updateTable() {
     tbody.innerHTML = '';
 
     if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
         footer.textContent = 'Mostrando 0 registros';
         return;
     }
 
     filteredData.forEach(item => {
         const row = document.createElement('tr');
-
-        const solicitacao = getColumnValue(item, [
-            'Solicitação',
-            'Solicitacao'
-        ]);
 
         const dataSolicitacao = getColumnValue(item, [
             'Data da Solicitação',
@@ -743,7 +668,6 @@ function updateTable() {
         ]);
 
         row.innerHTML = `
-            <td>${solicitacao}</td>
             <td>${formatDate(dataSolicitacao)}</td>
             <td>${prontuario}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -771,10 +695,14 @@ function parseDate(dateString) {
     if (!dateString || dateString === '-') return null;
 
     let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (match) return new Date(match[3], match[2] - 1, match[1]);
+    if (match) {
+        return new Date(match[3], match[2] - 1, match[1]);
+    }
 
     match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (match) return new Date(match[1], match[2] - 1, match[3]);
+    if (match) {
+        return new Date(match[1], match[2] - 1, match[3]);
+    }
 
     return null;
 }
@@ -800,7 +728,7 @@ function refreshData() {
 }
 
 // ===================================
-// DOWNLOAD EXCEL (mantido; já inclui "Solicitação")
+// DOWNLOAD EXCEL (mantido como estava)
 // ===================================
 function downloadExcel() {
     if (filteredData.length === 0) {
@@ -809,19 +737,19 @@ function downloadExcel() {
     }
 
     const exportData = filteredData.map(item => ({
-        'Solicitação': getColumnValue(item, ['Solicitação', 'Solicitacao'], ''),
-        'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação', 'Data da Solicitacao', 'Data Solicitacao'], ''),
-        'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'N° Prontuário', 'Numero Prontuário', 'Prontuário', 'Prontuario'], ''),
+        'Solicitação': getColumnValue(item, ['Solicitação'], ''),
+        'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação'], ''),
+        'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'N° Prontuário'], ''),
         'Telefone': item['Telefone'] || '',
         'Unidade Solicitante': item['Unidade Solicitante'] || '',
         'CBO Especialidade': item['Cbo Especialidade'] || '',
-        'Data Início Pendência': getColumnValue(item, ['Data Início da Pendência','Data Início Pendência','Data Inicio da Pendencia','Data Inicio Pendencia'], ''),
+        'Data Início Pendência': getColumnValue(item, ['Data Início da Pendência'], ''),
         'Status': item['Status'] || '',
         'Prestador': item['Prestador'] || '',
-        'Data Final Prazo 15d': getColumnValue(item, ['Data Final do Prazo (Pendência com 15 dias)','Data Final do Prazo (Pendencia com 15 dias)','Data Final Prazo 15d','Prazo 15 dias'], ''),
-        'Data Envio Email 15d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 15 dias)','Data do envio do Email (Prazo: Pendencia com 15 dias)','Data Envio Email 15d','Email 15 dias'], ''),
-        'Data Final Prazo 30d': getColumnValue(item, ['Data Final do Prazo (Pendência com 30 dias)','Data Final do Prazo (Pendencia com 30 dias)','Data Final Prazo 30d','Prazo 30 dias'], ''),
-        'Data Envio Email 30d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 30 dias)','Data do envio do Email (Prazo: Pendencia com 30 dias)','Data Envio Email 30d','Email 30 dias'], '')
+        'Data Final Prazo 15d': getColumnValue(item, ['Data Final do Prazo (Pendência com 15 dias)'], ''),
+        'Data Envio Email 15d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 15 dias)'], ''),
+        'Data Final Prazo 30d': getColumnValue(item, ['Data Final do Prazo (Pendência com 30 dias)'], ''),
+        'Data Envio Email 30d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 30 dias)'], '')
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -829,7 +757,7 @@ function downloadExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
 
     ws['!cols'] = [
-        { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 15 },
+        { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
         { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 },
         { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 20 }
     ];
