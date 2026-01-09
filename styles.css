@@ -329,13 +329,35 @@ body {
 
 .chart-wrapper {
     position: relative;
-    height: 350px;
+    height: 900px; /* ✅ AUMENTADO DE 350px PARA 900px */
+    min-height: 400px;
+}
+
+/* ✅ NOVO: Altura específica para gráfico de pizza */
+.chart-wrapper-pizza {
+    position: relative;
+    height: 450px;
+    min-height: 400px;
 }
 
 /* Responsividade para gráficos */
 @media (max-width: 1200px) {
     .charts-container {
         grid-template-columns: 1fr;
+    }
+    
+    .chart-wrapper {
+        height: 850px; /* Ajuste para tablets */
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-wrapper {
+        height: 750px; /* Ajuste para mobile */
+    }
+    
+    .chart-wrapper-pizza {
+        height: 400px;
     }
 }
 
