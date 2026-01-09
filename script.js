@@ -371,7 +371,7 @@ function updateCharts() {
 
     const unidadesLabels = Object.keys(unidadesCount)
         .sort((a, b) => unidadesCount[b] - unidadesCount[a])
-        .slice(0, 25);
+        .slice(0, 50);
     const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
 
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
@@ -385,7 +385,7 @@ function updateCharts() {
 
     const especialidadesLabels = Object.keys(especialidadesCount)
         .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
-        .slice(0, 25);
+        .slice(0, 50);
     const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
 
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
