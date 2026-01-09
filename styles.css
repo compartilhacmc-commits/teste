@@ -8,19 +8,16 @@
 }
 
 :root {
-    /* Cores Principais */
     --azul-escuro: #1e3a8a;
     --azul-medio: #2563eb;
     --azul-claro: #3b82f6;
     --azul-celeste: #60a5fa;
     
-    /* Cores Secundárias */
     --verde: #10b981;
     --amarelo: #f59e0b;
     --vermelho: #ef4444;
     --roxo: #8b5cf6;
     
-    /* Neutros */
     --branco: #ffffff;
     --cinza-100: #f3f4f6;
     --cinza-200: #e5e7eb;
@@ -29,7 +26,6 @@
     --cinza-800: #1f2937;
     --preto: #111827;
     
-    /* Sombras */
     --sombra-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --sombra-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -45,7 +41,7 @@ body {
 }
 
 /* ===================================
-   CABEÇALHO COM GRADIENTE (ESTILO CENSO IBGE)
+   CABEÇALHO COM GRADIENTE
 =================================== */
 .header {
     background: linear-gradient(90deg, #3d5a80 0%, #5b88b8 50%, #7fb3d5 100%);
@@ -334,6 +330,44 @@ body {
 .chart-wrapper {
     position: relative;
     height: 350px;
+}
+
+/* ===================================
+   CAIXA DE PESQUISA
+=================================== */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--cinza-100);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    border: 2px solid var(--azul-medio);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--azul-claro);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box i {
+    color: var(--azul-medio);
+    font-size: 1.1rem;
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: var(--cinza-800);
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: var(--cinza-600);
 }
 
 /* ===================================
