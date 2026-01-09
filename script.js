@@ -13,6 +13,7 @@ let allData = [];
 let filteredData = [];
 let chartUnidades = null;
 let chartEspecialidades = null;
+let chartStatus = null;
 
 // ===================================
 // INICIALIZAÇÃO
@@ -288,7 +289,7 @@ function updateCharts() {
     
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
     
-    // Gráfico de Especialidades (HORIZONTAL VERMELHO - ALTERAÇÃO AQUI)
+    // Gráfico de Especialidades (HORIZONTAL VERMELHO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
@@ -302,6 +303,20 @@ function updateCharts() {
     const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
     
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
+    
+    // Gráfico de Status (HORIZONTAL LARANJA - NOVO)
+    const statusCount = {};
+    filteredData.forEach(item => {
+        const status = item['Status'] || 'Não informado';
+        statusCount[status] = (statusCount[status] || 0) + 1;
+    });
+    
+    // Ordenar e pegar todos os status
+    const statusLabels = Object.keys(statusCount)
+        .sort((a, b) => statusCount[b] - statusCount[a]);
+    const statusValues = statusLabels.map(label => statusCount[label]);
+    
+    createHorizontalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
 }
 
 // ===================================
@@ -316,6 +331,9 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
     }
     if (canvasId === 'chartEspecialidades' && chartEspecialidades) {
         chartEspecialidades.destroy();
+    }
+    if (canvasId === 'chartStatus' && chartStatus) {
+        chartStatus.destroy();
     }
     
     // Criar novo gráfico HORIZONTAL
@@ -404,6 +422,9 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
     }
     if (canvasId === 'chartEspecialidades') {
         chartEspecialidades = chart;
+    }
+    if (canvasId === 'chartStatus') {
+        chartStatus = chart;
     }
 }
 
