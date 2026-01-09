@@ -3,7 +3,6 @@
 // ===================================
 const SHEET_ID = '1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4';
 const SHEET_NAME = 'PENDÊNCIAS ELDORADO';
-// URL corrigida com encoding do nome da aba
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
 // ===================================
@@ -40,20 +39,17 @@ async function loadData() {
         const csvText = await response.text();
         console.log('Dados CSV recebidos, primeiros 500 caracteres:', csvText.substring(0, 500));
         
-        // Parse CSV
         const rows = parseCSV(csvText);
         
         if (rows.length < 2) {
             throw new Error('Planilha vazia ou sem dados');
         }
         
-        // Cabeçalhos (primeira linha)
         const headers = rows[0];
         console.log('Cabeçalhos encontrados:', headers);
         
-        // Converter linhas em objetos
         allData = rows.slice(1)
-            .filter(row => row.length > 1 && row[0]) // Filtrar linhas vazias
+            .filter(row => row.length > 1 && row[0])
             .map(row => {
                 const obj = {};
                 headers.forEach((header, index) => {
@@ -67,7 +63,6 @@ async function loadData() {
         
         filteredData = [...allData];
         
-        // Inicializar interface
         populateFilters();
         updateDashboard();
         
@@ -96,26 +91,21 @@ function parseCSV(text) {
         
         if (char === '"') {
             if (insideQuotes && nextChar === '"') {
-                // Aspas duplas dentro de aspas
                 currentCell += '"';
-                i++; // Pular próxima aspa
+                i++;
             } else {
-                // Alternar estado de aspas
                 insideQuotes = !insideQuotes;
             }
         } else if (char === ',' && !insideQuotes) {
-            // Fim de célula
             currentRow.push(currentCell.trim());
             currentCell = '';
         } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-            // Fim de linha
             if (currentCell || currentRow.length > 0) {
                 currentRow.push(currentCell.trim());
                 rows.push(currentRow);
                 currentRow = [];
                 currentCell = '';
             }
-            // Pular \r\n
             if (char === '\r' && nextChar === '\n') {
                 i++;
             }
@@ -124,7 +114,6 @@ function parseCSV(text) {
         }
     }
     
-    // Adicionar última célula e linha
     if (currentCell || currentRow.length > 0) {
         currentRow.push(currentCell.trim());
         rows.push(currentRow);
@@ -149,7 +138,6 @@ function showLoading(show) {
 // POPULAR FILTROS
 // ===================================
 function populateFilters() {
-    // Status
     const statusList = [...new Set(allData.map(item => item['Status']))].filter(Boolean).sort();
     const selectStatus = document.getElementById('filterStatus');
     selectStatus.innerHTML = '<option value="">Todos</option>';
@@ -160,7 +148,6 @@ function populateFilters() {
         selectStatus.appendChild(option);
     });
     
-    // Unidades
     const unidades = [...new Set(allData.map(item => item['Unidade Solicitante']))].filter(Boolean).sort();
     const selectUnidade = document.getElementById('filterUnidade');
     selectUnidade.innerHTML = '<option value="">Todas</option>';
@@ -171,7 +158,6 @@ function populateFilters() {
         selectUnidade.appendChild(option);
     });
     
-    // Especialidades
     const especialidades = [...new Set(allData.map(item => item['Cbo Especialidade']))].filter(Boolean).sort();
     const selectEspecialidade = document.getElementById('filterEspecialidade');
     selectEspecialidade.innerHTML = '<option value="">Todas</option>';
@@ -182,7 +168,6 @@ function populateFilters() {
         selectEspecialidade.appendChild(option);
     });
     
-    // Prestador (NOVO FILTRO)
     const prestadores = [...new Set(allData.map(item => item['Prestador']))].filter(Boolean).sort();
     const selectPrestador = document.getElementById('filterPrestador');
     selectPrestador.innerHTML = '<option value="">Todos</option>';
@@ -221,9 +206,45 @@ function clearFilters() {
     document.getElementById('filterUnidade').value = '';
     document.getElementById('filterEspecialidade').value = '';
     document.getElementById('filterPrestador').value = '';
+    document.getElementById('searchInput').value = '';
     
     filteredData = [...allData];
     updateDashboard();
+}
+
+// ===================================
+// PESQUISAR NA TABELA
+// ===================================
+function searchTable() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const tbody = document.getElementById('tableBody');
+    const rows = tbody.getElementsByTagName('tr');
+    
+    let visibleCount = 0;
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+            const cellText = cells[j].textContent.toLowerCase();
+            if (cellText.includes(searchValue)) {
+                found = true;
+                break;
+            }
+        }
+        
+        if (found) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    
+    const footer = document.getElementById('tableFooter');
+    footer.textContent = `Mostrando ${visibleCount} de ${filteredData.length} registros`;
 }
 
 // ===================================
@@ -242,7 +263,6 @@ function updateCards() {
     const total = allData.length;
     const filtrado = filteredData.length;
     
-    // Calcular pendências por prazo
     const hoje = new Date();
     let pendencias15 = 0;
     let pendencias30 = 0;
@@ -261,7 +281,6 @@ function updateCards() {
         }
     });
     
-    // Atualizar valores dos cards
     document.getElementById('totalPendencias').textContent = total;
     document.getElementById('pendencias15').textContent = pendencias15;
     document.getElementById('pendencias30').textContent = pendencias30;
@@ -274,14 +293,12 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
-    // Gráfico de Unidades (HORIZONTAL VERDE)
     const unidadesCount = {};
     filteredData.forEach(item => {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
         unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
     });
     
-    // Ordenar e pegar top 10
     const unidadesLabels = Object.keys(unidadesCount)
         .sort((a, b) => unidadesCount[b] - unidadesCount[a])
         .slice(0, 10);
@@ -289,14 +306,12 @@ function updateCharts() {
     
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
     
-    // Gráfico de Especialidades (HORIZONTAL VERMELHO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
         especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
     });
     
-    // Ordenar e pegar top 10
     const especialidadesLabels = Object.keys(especialidadesCount)
         .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
         .slice(0, 10);
@@ -304,14 +319,12 @@ function updateCharts() {
     
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
     
-    // Gráfico de Status (HORIZONTAL LARANJA - NOVO)
     const statusCount = {};
     filteredData.forEach(item => {
         const status = item['Status'] || 'Não informado';
         statusCount[status] = (statusCount[status] || 0) + 1;
     });
     
-    // Ordenar e pegar todos os status
     const statusLabels = Object.keys(statusCount)
         .sort((a, b) => statusCount[b] - statusCount[a]);
     const statusValues = statusLabels.map(label => statusCount[label]);
@@ -325,7 +338,6 @@ function updateCharts() {
 function createHorizontalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
     
-    // Destruir gráfico anterior
     if (canvasId === 'chartUnidades' && chartUnidades) {
         chartUnidades.destroy();
     }
@@ -336,7 +348,6 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
         chartStatus.destroy();
     }
     
-    // Criar novo gráfico HORIZONTAL
     const chart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -350,7 +361,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
             }]
         },
         options: {
-            indexAxis: 'y', // HORIZONTAL
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -416,7 +427,6 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
         }]
     });
     
-    // Armazenar referência
     if (canvasId === 'chartUnidades') {
         chartUnidades = chart;
     }
@@ -437,7 +447,7 @@ function updateTable() {
     tbody.innerHTML = '';
     
     if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
         footer.textContent = 'Mostrando 0 registros';
         return;
     }
@@ -445,7 +455,7 @@ function updateTable() {
     filteredData.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${item['N° Solicitação'] || item['Número da Solicitação'] || '-'}</td>
+            <td>${item['N° Solicitação'] || item['Número da Solicitação'] || item['Nº Solicitação'] || '-'}</td>
             <td>${formatDate(item['Data da Solicitação'])}</td>
             <td>${item['Nº Prontuário'] || item['N° Prontuário'] || '-'}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -453,11 +463,14 @@ function updateTable() {
             <td>${item['Cbo Especialidade'] || '-'}</td>
             <td>${formatDate(item['Data Início da Pendência'])}</td>
             <td>${item['Status'] || '-'}</td>
+            <td>${formatDate(item['Data Final do Prazo (Pendência com 15 dias)'])}</td>
+            <td>${formatDate(item['Data do envio do Email (Prazo: Pendência com 15 dias)'])}</td>
+            <td>${formatDate(item['Data Final do Prazo (Pendência com 30 dias)'])}</td>
+            <td>${formatDate(item['Data do envio do Email (Prazo: Pendência com 30 dias)'])}</td>
         `;
         tbody.appendChild(row);
     });
     
-    // Atualizar rodapé
     const total = allData.length;
     const showing = filteredData.length;
     footer.textContent = `Mostrando de 1 até ${showing} de ${total} registros`;
@@ -469,13 +482,11 @@ function updateTable() {
 function parseDate(dateString) {
     if (!dateString) return null;
     
-    // Tentar DD/MM/YYYY
     let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (match) {
         return new Date(match[3], match[2] - 1, match[1]);
     }
     
-    // Tentar YYYY-MM-DD
     match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
         return new Date(match[1], match[2] - 1, match[3]);
@@ -513,9 +524,8 @@ function downloadExcel() {
         return;
     }
     
-    // Preparar dados
     const exportData = filteredData.map(item => ({
-        'Nº Solicitação': item['N° Solicitação'] || item['Número da Solicitação'] || '',
+        'Nº Solicitação': item['N° Solicitação'] || item['Número da Solicitação'] || item['Nº Solicitação'] || '',
         'Data Solicitação': item['Data da Solicitação'] || '',
         'Nº Prontuário': item['Nº Prontuário'] || item['N° Prontuário'] || '',
         'Telefone': item['Telefone'] || '',
@@ -523,21 +533,23 @@ function downloadExcel() {
         'CBO Especialidade': item['Cbo Especialidade'] || '',
         'Data Início Pendência': item['Data Início da Pendência'] || '',
         'Status': item['Status'] || '',
-        'Prestador': item['Prestador'] || ''
+        'Prestador': item['Prestador'] || '',
+        'Data Final Prazo 15d': item['Data Final do Prazo (Pendência com 15 dias)'] || '',
+        'Data Envio Email 15d': item['Data do envio do Email (Prazo: Pendência com 15 dias)'] || '',
+        'Data Final Prazo 30d': item['Data Final do Prazo (Pendência com 30 dias)'] || '',
+        'Data Envio Email 30d': item['Data do envio do Email (Prazo: Pendência com 30 dias)'] || ''
     }));
     
-    // Criar workbook
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
     
-    // Larguras das colunas
     ws['!cols'] = [
         { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-        { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 }, { wch: 25 }
+        { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 }, 
+        { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 20 }
     ];
     
-    // Download
     const hoje = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `Pendencias_Eldorado_${hoje}.xlsx`);
 }
