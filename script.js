@@ -593,17 +593,9 @@ function updateTable() {
         const row = document.createElement('tr');
         
         // CORREÇÃO PRINCIPAL: Busca todas as variações possíveis do nome da coluna
-        const numeroSolicitacao = getColumnValue(item, [
-            'Número da Solicitação',
-            'Numero da Solicitação',
-            'Numero Solicitação',
-            'Número Solicitação',
-            'N° da Solicitação',
-            'N° Solicitação',
-            'Nº da Solicitação',
-            'Nº Solicitação',
-            'numero da solicitacao',
-            'numero solicitacao'
+        const Solicitacao = getColumnValue(item, [
+            'Solicitação'
+            
         ]);
         
         const dataSolicitacao = getColumnValue(item, [
@@ -657,7 +649,7 @@ function updateTable() {
         ]);
         
         row.innerHTML = `
-            <td>${numeroSolicitacao}</td>
+            <td>${Solicitacao}</td>
             <td>${formatDate(dataSolicitacao)}</td>
             <td>${prontuario}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -727,13 +719,8 @@ function downloadExcel() {
     }
     
     const exportData = filteredData.map(item => ({
-        'Numero da Solicitação': getColumnValue(item, [
-            'Número da Solicitação',
-            'Numero da Solicitação',
-            'Numero Solicitação',
-            'Número Solicitação',
-            'N° da Solicitação',
-            'N° Solicitação'
+        'Solicitação': getColumnValue(item, [
+            'Solicitação'
         ], ''),
         'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação'], ''),
         'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'N° Prontuário'], ''),
