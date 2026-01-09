@@ -594,9 +594,9 @@ function updateTable() {
         
         // CORREÇÃO PRINCIPAL: Busca todas as variações possíveis do nome da coluna
         const numeroSolicitacao = getColumnValue(item, [
+            'Número da Solicitação',
             'Numero da Solicitação',
             'Numero Solicitação',
-            'Número da Solicitação',
             'Número Solicitação',
             'N° da Solicitação',
             'N° Solicitação',
@@ -728,9 +728,9 @@ function downloadExcel() {
     
     const exportData = filteredData.map(item => ({
         'Numero da Solicitação': getColumnValue(item, [
+            'Número da Solicitação',
             'Numero da Solicitação',
             'Numero Solicitação',
-            'Número da Solicitação',
             'Número Solicitação',
             'N° da Solicitação',
             'N° Solicitação'
