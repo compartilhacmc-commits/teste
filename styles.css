@@ -12,12 +12,12 @@
     --azul-medio: #2563eb;
     --azul-claro: #3b82f6;
     --azul-celeste: #60a5fa;
-    
+
     --verde: #10b981;
     --amarelo: #f59e0b;
     --vermelho: #ef4444;
     --roxo: #8b5cf6;
-    
+
     --branco: #ffffff;
     --cinza-100: #f3f4f6;
     --cinza-200: #e5e7eb;
@@ -25,7 +25,7 @@
     --cinza-600: #4b5563;
     --cinza-800: #1f2937;
     --preto: #111827;
-    
+
     --sombra-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --sombra-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -329,15 +329,21 @@ body {
 
 .chart-wrapper {
     position: relative;
-    height: 900px; /* ✅ AUMENTADO DE 350px PARA 900px */
-    min-height: 400px;
+    height: 420px;
+    min-height: 350px;
 }
 
-/* ✅ NOVO: Altura específica para gráfico de pizza */
+/* ✅ Pizza com altura própria (mais bonita com legenda ao lado) */
 .chart-wrapper-pizza {
     position: relative;
     height: 450px;
     min-height: 400px;
+}
+
+/* ✅ Status vertical: deixa um pouco mais alto para caber rótulos */
+.chart-wrapper-status {
+    height: 460px;
+    min-height: 380px;
 }
 
 /* Responsividade para gráficos */
@@ -345,19 +351,19 @@ body {
     .charts-container {
         grid-template-columns: 1fr;
     }
-    
-    .chart-wrapper {
-        height: 850px; /* Ajuste para tablets */
-    }
 }
 
 @media (max-width: 768px) {
     .chart-wrapper {
-        height: 750px; /* Ajuste para mobile */
+        height: 360px;
     }
-    
+
     .chart-wrapper-pizza {
-        height: 400px;
+        height: 380px;
+    }
+
+    .chart-wrapper-status {
+        height: 380px;
     }
 }
 
@@ -400,7 +406,7 @@ body {
 }
 
 /* ===================================
-   TABELA DE DADOS - CORRIGIDA
+   TABELA DE DADOS
 =================================== */
 .table-container {
     background: var(--branco);
@@ -558,63 +564,40 @@ body {
     .header-title {
         font-size: 1.8rem;
     }
-    
+
     .header-subtitle {
         font-size: 0.95rem;
     }
-    
+
     .header-credits {
         font-size: 0.75rem;
     }
-    
+
     .container {
         padding: 0 1rem;
     }
-    
+
     .top-actions {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .action-buttons {
         width: 100%;
         flex-direction: column;
     }
-    
+
     .btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .cards-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .filters-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .chart-wrapper {
-        height: 300px;
-    }
-}
-
-@media (max-width: 480px) {
-    .header {
-        padding: 1.5rem 1rem;
-    }
-    
-    .header-title {
-        font-size: 1.5rem;
-    }
-    
-    .metric-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .card-value {
-        font-size: 1.8rem;
     }
 }
 
