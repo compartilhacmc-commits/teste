@@ -378,7 +378,7 @@ body {
 }
 
 /* ===================================
-   TABELA DE DADOS
+   TABELA DE DADOS - CORRIGIDA
 =================================== */
 .table-container {
     background: var(--branco);
@@ -391,6 +391,8 @@ body {
 .table-wrapper {
     overflow-x: auto;
     margin-top: 1rem;
+    border: 1px solid var(--cinza-300);
+    border-radius: 8px;
 }
 
 .data-table {
@@ -405,21 +407,23 @@ body {
 }
 
 .data-table th {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
     text-align: left;
     font-weight: 600;
     white-space: nowrap;
     font-size: 0.875rem;
     letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    vertical-align: middle;
 }
 
 .data-table tbody tr {
-    border-bottom: 1px solid var(--cinza-200);
+    border-bottom: 1px solid var(--cinza-300);
     transition: all 0.2s ease;
 }
 
 .data-table tbody tr:hover {
-    background: var(--cinza-100);
+    background: #e3f2fd;
 }
 
 .data-table tbody tr:nth-child(even) {
@@ -427,12 +431,15 @@ body {
 }
 
 .data-table tbody tr:nth-child(even):hover {
-    background: var(--cinza-100);
+    background: #e3f2fd;
 }
 
 .data-table td {
-    padding: 1rem;
+    padding: 0.875rem 0.75rem;
     color: var(--cinza-800);
+    border: 1px solid var(--cinza-300);
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 .loading-message {
@@ -440,6 +447,7 @@ body {
     padding: 3rem !important;
     font-size: 1.1rem;
     color: var(--azul-medio);
+    border: none !important;
 }
 
 .table-footer {
@@ -448,6 +456,7 @@ body {
     border-top: 2px solid var(--cinza-200);
     color: var(--cinza-600);
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 /* ===================================
