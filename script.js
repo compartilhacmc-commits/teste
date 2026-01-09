@@ -42,25 +42,25 @@ async function loadData() {
     showLoading(true);
     try {
         console.log('Fazendo requisição para:', SHEET_URL);
-        
+
         const response = await fetch(SHEET_URL);
-        
+
         if (!response.ok) {
             throw new Error(`Erro HTTP: ${response.status}`);
         }
-        
+
         const csvText = await response.text();
         console.log('Dados CSV recebidos, primeiros 500 caracteres:', csvText.substring(0, 500));
-        
+
         const rows = parseCSV(csvText);
-        
+
         if (rows.length < 2) {
             throw new Error('Planilha vazia ou sem dados');
         }
-        
+
         const headers = rows[0];
         console.log('Cabeçalhos encontrados:', headers);
-        
+
         allData = rows.slice(1)
             .filter(row => row.length > 1 && row[0])
             .map(row => {
@@ -70,18 +70,18 @@ async function loadData() {
                 });
                 return obj;
             });
-        
+
         console.log(`Total de registros carregados: ${allData.length}`);
         console.log('Primeiro registro completo:', allData[0]);
         console.log('Todas as chaves do primeiro registro:', Object.keys(allData[0]));
-        
+
         filteredData = [...allData];
-        
+
         populateFilters();
         updateDashboard();
-        
+
         console.log('Dados carregados com sucesso!');
-        
+
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
         alert(`Erro ao carregar dados da planilha: ${error.message}\n\nVerifique:\n1. A planilha está pública?\n2. O nome da aba está correto: "${SHEET_NAME}"?\n3. Há dados na planilha?`);
@@ -98,11 +98,11 @@ function parseCSV(text) {
     let currentRow = [];
     let currentCell = '';
     let insideQuotes = false;
-    
+
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
         const nextChar = text[i + 1];
-        
+
         if (char === '"') {
             if (insideQuotes && nextChar === '"') {
                 currentCell += '"';
@@ -127,12 +127,12 @@ function parseCSV(text) {
             currentCell += char;
         }
     }
-    
+
     if (currentCell || currentRow.length > 0) {
         currentRow.push(currentCell.trim());
         rows.push(currentRow);
     }
-    
+
     return rows;
 }
 
@@ -161,7 +161,7 @@ function populateFilters() {
         option.textContent = status;
         selectStatus.appendChild(option);
     });
-    
+
     const unidades = [...new Set(allData.map(item => item['Unidade Solicitante']))].filter(Boolean).sort();
     const selectUnidade = document.getElementById('filterUnidade');
     selectUnidade.innerHTML = '<option value="">Todas</option>';
@@ -171,7 +171,7 @@ function populateFilters() {
         option.textContent = unidade;
         selectUnidade.appendChild(option);
     });
-    
+
     const especialidades = [...new Set(allData.map(item => item['Cbo Especialidade']))].filter(Boolean).sort();
     const selectEspecialidade = document.getElementById('filterEspecialidade');
     selectEspecialidade.innerHTML = '<option value="">Todas</option>';
@@ -181,7 +181,7 @@ function populateFilters() {
         option.textContent = especialidade;
         selectEspecialidade.appendChild(option);
     });
-    
+
     const prestadores = [...new Set(allData.map(item => item['Prestador']))].filter(Boolean).sort();
     const selectPrestador = document.getElementById('filterPrestador');
     selectPrestador.innerHTML = '<option value="">Todos</option>';
@@ -201,14 +201,14 @@ function applyFilters() {
     const unidade = document.getElementById('filterUnidade').value;
     const especialidade = document.getElementById('filterEspecialidade').value;
     const prestador = document.getElementById('filterPrestador').value;
-    
+
     filteredData = allData.filter(item => {
         return (!status || item['Status'] === status) &&
                (!unidade || item['Unidade Solicitante'] === unidade) &&
                (!especialidade || item['Cbo Especialidade'] === especialidade) &&
                (!prestador || item['Prestador'] === prestador);
     });
-    
+
     updateDashboard();
 }
 
@@ -221,7 +221,7 @@ function clearFilters() {
     document.getElementById('filterEspecialidade').value = '';
     document.getElementById('filterPrestador').value = '';
     document.getElementById('searchInput').value = '';
-    
+
     filteredData = [...allData];
     updateDashboard();
 }
@@ -233,14 +233,14 @@ function searchTable() {
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
     const tbody = document.getElementById('tableBody');
     const rows = tbody.getElementsByTagName('tr');
-    
+
     let visibleCount = 0;
-    
+
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.getElementsByTagName('td');
         let found = false;
-        
+
         for (let j = 0; j < cells.length; j++) {
             const cellText = cells[j].textContent.toLowerCase();
             if (cellText.includes(searchValue)) {
@@ -248,7 +248,7 @@ function searchTable() {
                 break;
             }
         }
-        
+
         if (found) {
             row.style.display = '';
             visibleCount++;
@@ -256,7 +256,7 @@ function searchTable() {
             row.style.display = 'none';
         }
     }
-    
+
     const footer = document.getElementById('tableFooter');
     footer.textContent = `Mostrando ${visibleCount} de ${filteredData.length} registros`;
 }
@@ -276,16 +276,16 @@ function updateDashboard() {
 function updateCards() {
     const total = allData.length;
     const filtrado = filteredData.length;
-    
+
     const hoje = new Date();
     let pendencias15 = 0;
     let pendencias30 = 0;
-    
+
     filteredData.forEach(item => {
         const dataInicio = parseDate(item['Data Início da Pendência']);
         if (dataInicio) {
             const diasDecorridos = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
-            
+
             if (diasDecorridos >= 15 && diasDecorridos < 30) {
                 pendencias15++;
             }
@@ -294,11 +294,11 @@ function updateCards() {
             }
         }
     });
-    
+
     document.getElementById('totalPendencias').textContent = total;
     document.getElementById('pendencias15').textContent = pendencias15;
     document.getElementById('pendencias30').textContent = pendencias30;
-    
+
     const percentFiltrados = total > 0 ? ((filtrado / total) * 100).toFixed(1) : '100.0';
     document.getElementById('percentFiltrados').textContent = percentFiltrados + '%';
 }
@@ -313,42 +313,42 @@ function updateCharts() {
         const unidade = item['Unidade Solicitante'] || 'Não informado';
         unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
     });
-    
+
     const unidadesLabels = Object.keys(unidadesCount)
         .sort((a, b) => unidadesCount[b] - unidadesCount[a])
         .slice(0, 25);
     const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
-    
+
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
-    
+
     // Gráfico de Especialidades (HORIZONTAL VERMELHO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
         const especialidade = item['Cbo Especialidade'] || 'Não informado';
         especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
     });
-    
+
     const especialidadesLabels = Object.keys(especialidadesCount)
         .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
         .slice(0, 25);
     const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
-    
+
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
-    
-    // Gráfico de Status (HORIZONTAL LARANJA)
+
+    // Gráfico de Status (VERTICAL LARANJA) ✅
     const statusCount = {};
     filteredData.forEach(item => {
         const status = item['Status'] || 'Não informado';
         statusCount[status] = (statusCount[status] || 0) + 1;
     });
-    
+
     const statusLabels = Object.keys(statusCount)
         .sort((a, b) => statusCount[b] - statusCount[a]);
     const statusValues = statusLabels.map(label => statusCount[label]);
-    
-    createHorizontalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
-    
-    // NOVO: Gráfico de Pizza por Status
+
+    createVerticalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
+
+    // Gráfico de Pizza por Status ✅ legenda "Status + %"
     createPieChart('chartPizzaStatus', statusLabels, statusValues);
 }
 
@@ -357,7 +357,7 @@ function updateCharts() {
 // ===================================
 function createHorizontalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
-    
+
     if (canvasId === 'chartUnidades' && chartUnidades) {
         chartUnidades.destroy();
     }
@@ -367,7 +367,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
     if (canvasId === 'chartStatus' && chartStatus) {
         chartStatus.destroy();
     }
-    
+
     const chart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -385,49 +385,28 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     enabled: true,
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
                     padding: 12,
                     cornerRadius: 8
                 }
             },
             scales: {
-                x: {
-                    display: false,
-                    grid: {
-                        display: false
-                    }
-                },
+                x: { display: false, grid: { display: false } },
                 y: {
                     ticks: {
-                        font: {
-                            size: 12,
-                            weight: '500'
-                        },
+                        font: { size: 12, weight: '500' },
                         color: '#4a5568',
                         padding: 8
                     },
-                    grid: {
-                        display: false
-                    }
+                    grid: { display: false }
                 }
             },
-            layout: {
-                padding: {
-                    right: 50
-                }
-            }
+            layout: { padding: { right: 50 } }
         },
         plugins: [{
             id: 'customLabels',
@@ -441,11 +420,11 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
                             ctx.font = 'bold 14px Arial';
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
-                            
+
                             const dataString = dataset.data[index].toString();
                             const xPos = element.x + 10;
                             const yPos = element.y;
-                            
+
                             ctx.fillText(dataString, xPos, yPos);
                         });
                     }
@@ -453,36 +432,96 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
             }
         }]
     });
-    
-    if (canvasId === 'chartUnidades') {
-        chartUnidades = chart;
-    }
-    if (canvasId === 'chartEspecialidades') {
-        chartEspecialidades = chart;
-    }
-    if (canvasId === 'chartStatus') {
-        chartStatus = chart;
-    }
+
+    if (canvasId === 'chartUnidades') chartUnidades = chart;
+    if (canvasId === 'chartEspecialidades') chartEspecialidades = chart;
+    if (canvasId === 'chartStatus') chartStatus = chart;
 }
 
 // ===================================
-// CRIAR GRÁFICO DE PIZZA
+// CRIAR GRÁFICO DE BARRAS VERTICAIS (STATUS) ✅
+// ===================================
+function createVerticalBarChart(canvasId, labels, data, color) {
+    const ctx = document.getElementById(canvasId);
+
+    if (canvasId === 'chartStatus' && chartStatus) {
+        chartStatus.destroy();
+    }
+
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Quantidade',
+                data,
+                backgroundColor: color,
+                borderWidth: 0,
+                borderRadius: 6,
+
+                // ✅ barras mais finas
+                barPercentage: 0.55,
+                categoryPercentage: 0.70,
+                maxBarThickness: 28
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        font: { size: 12, weight: '600' },
+                        color: '#4a5568',
+                        maxRotation: 45,
+                        minRotation: 0
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: { size: 12, weight: '600' },
+                        color: '#4a5568'
+                    },
+                    grid: { color: 'rgba(0,0,0,0.06)' }
+                }
+            }
+        }
+    });
+
+    chartStatus = chart;
+}
+
+// ===================================
+// CRIAR GRÁFICO DE PIZZA ✅
 // ===================================
 function createPieChart(canvasId, labels, data) {
     const ctx = document.getElementById(canvasId);
-    
+
     if (chartPizzaStatus) {
         chartPizzaStatus.destroy();
     }
-    
+
     const colors = [
         '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
         '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#84cc16'
     ];
-    
+
     const total = data.reduce((sum, val) => sum + val, 0);
-    const percentages = data.map(val => ((val / total) * 100).toFixed(1));
-    
+    const percentages = data.map(val => total > 0 ? ((val / total) * 100).toFixed(1) : '0.0');
+
     chartPizzaStatus = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -501,10 +540,7 @@ function createPieChart(canvasId, labels, data) {
                 legend: {
                     position: 'right',
                     labels: {
-                        font: {
-                            size: 13,
-                            weight: '600'
-                        },
+                        font: { size: 13, weight: '600' },
                         color: '#1f2937',
                         padding: 15,
                         usePointStyle: true,
@@ -512,10 +548,10 @@ function createPieChart(canvasId, labels, data) {
                         generateLabels: function(chart) {
                             const datasets = chart.data.datasets;
                             return chart.data.labels.map((label, i) => {
-                                const value = datasets[0].data[i];
                                 const percentage = percentages[i];
                                 return {
-                                    text: `${label}: ${value} (${percentage}%)`,
+                                    // ✅ Apenas "Status: XX.X%"
+                                    text: `${label}: ${percentage}%`,
                                     fillStyle: datasets[0].backgroundColor[i],
                                     hidden: false,
                                     index: i
@@ -527,20 +563,15 @@ function createPieChart(canvasId, labels, data) {
                 tooltip: {
                     enabled: true,
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
                     padding: 12,
                     cornerRadius: 8,
                     callbacks: {
                         label: function(context) {
                             const value = context.parsed;
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${context.label}: ${value} (${percentage}%)`;
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                            return `${context.label}: ${percentage}% (${value})`;
                         }
                     }
                 }
@@ -554,18 +585,17 @@ function createPieChart(canvasId, labels, data) {
                     const meta = chart.getDatasetMeta(datasetIndex);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
-                            const data = dataset.data[index];
+                            const value = dataset.data[index];
                             const percentage = percentages[index];
-                            
+
                             if (parseFloat(percentage) > 5) {
                                 ctx.fillStyle = '#ffffff';
                                 ctx.font = 'bold 13px Arial';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                
+
                                 const position = element.tooltipPosition();
-                                ctx.fillText(`${data}`, position.x, position.y - 8);
-                                ctx.fillText(`${percentage}%`, position.x, position.y + 8);
+                                ctx.fillText(`${percentage}%`, position.x, position.y);
                             }
                         });
                     }
@@ -576,34 +606,29 @@ function createPieChart(canvasId, labels, data) {
 }
 
 // ===================================
-// ATUALIZAR TABELA - CORRIGIDA COM BUSCA INTELIGENTE
+// ATUALIZAR TABELA ✅ (sem coluna Solicitação)
 // ===================================
 function updateTable() {
     const tbody = document.getElementById('tableBody');
     const footer = document.getElementById('tableFooter');
     tbody.innerHTML = '';
-    
+
     if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="loading-message"><i class="fas fa-inbox"></i> Nenhum registro encontrado</td></tr>';
         footer.textContent = 'Mostrando 0 registros';
         return;
     }
-    
+
     filteredData.forEach(item => {
         const row = document.createElement('tr');
-        
-        // CORREÇÃO PRINCIPAL: Busca todas as variações possíveis do nome da coluna
-        const Solicitacao = getColumnValue(item, [
-            'Solicitação'           
-        ]);
-        
+
         const dataSolicitacao = getColumnValue(item, [
             'Data da Solicitação',
             'Data Solicitação',
             'Data da Solicitacao',
             'Data Solicitacao'
         ]);
-        
+
         const prontuario = getColumnValue(item, [
             'Nº Prontuário',
             'N° Prontuário',
@@ -611,44 +636,43 @@ function updateTable() {
             'Prontuário',
             'Prontuario'
         ]);
-        
+
         const dataInicio = getColumnValue(item, [
             'Data Início da Pendência',
             'Data Inicio da Pendencia',
             'Data Início Pendência',
             'Data Inicio Pendencia'
         ]);
-        
+
         const prazo15 = getColumnValue(item, [
             'Data Final do Prazo (Pendência com 15 dias)',
             'Data Final do Prazo (Pendencia com 15 dias)',
             'Data Final Prazo 15d',
             'Prazo 15 dias'
         ]);
-        
+
         const email15 = getColumnValue(item, [
             'Data do envio do Email (Prazo: Pendência com 15 dias)',
             'Data do envio do Email (Prazo: Pendencia com 15 dias)',
             'Data Envio Email 15d',
             'Email 15 dias'
         ]);
-        
+
         const prazo30 = getColumnValue(item, [
             'Data Final do Prazo (Pendência com 30 dias)',
             'Data Final do Prazo (Pendencia com 30 dias)',
             'Data Final Prazo 30d',
             'Prazo 30 dias'
         ]);
-        
+
         const email30 = getColumnValue(item, [
             'Data do envio do Email (Prazo: Pendência com 30 dias)',
             'Data do envio do Email (Prazo: Pendencia com 30 dias)',
             'Data Envio Email 30d',
             'Email 30 dias'
         ]);
-        
+
         row.innerHTML = `
-            <td>${Solicitacao}</td>
             <td>${formatDate(dataSolicitacao)}</td>
             <td>${prontuario}</td>
             <td>${item['Telefone'] || '-'}</td>
@@ -663,7 +687,7 @@ function updateTable() {
         `;
         tbody.appendChild(row);
     });
-    
+
     const total = allData.length;
     const showing = filteredData.length;
     footer.textContent = `Mostrando de 1 até ${showing} de ${total} registros`;
@@ -674,30 +698,30 @@ function updateTable() {
 // ===================================
 function parseDate(dateString) {
     if (!dateString || dateString === '-') return null;
-    
+
     let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (match) {
         return new Date(match[3], match[2] - 1, match[1]);
     }
-    
+
     match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
         return new Date(match[1], match[2] - 1, match[3]);
     }
-    
+
     return null;
 }
 
 function formatDate(dateString) {
     if (!dateString || dateString === '-') return '-';
-    
+
     const date = parseDate(dateString);
     if (!date || isNaN(date.getTime())) return dateString;
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    
+
     return `${day}/${month}/${year}`;
 }
 
@@ -709,14 +733,14 @@ function refreshData() {
 }
 
 // ===================================
-// DOWNLOAD EXCEL - CORRIGIDO
+// DOWNLOAD EXCEL (mantive como estava; se quiser remover "Solicitação" do Excel também, eu ajusto)
 // ===================================
 function downloadExcel() {
     if (filteredData.length === 0) {
         alert('Não há dados para exportar.');
         return;
     }
-    
+
     const exportData = filteredData.map(item => ({
         'Solicitação': getColumnValue(item, ['Solicitação'], ''),
         'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação'], ''),
@@ -732,17 +756,17 @@ function downloadExcel() {
         'Data Final Prazo 30d': getColumnValue(item, ['Data Final do Prazo (Pendência com 30 dias)'], ''),
         'Data Envio Email 30d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 30 dias)'], '')
     }));
-    
+
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
-    
+
     ws['!cols'] = [
         { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-        { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 }, 
+        { wch: 30 }, { wch: 30 }, { wch: 18 }, { wch: 20 },
         { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 20 }
     ];
-    
+
     const hoje = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `Pendencias_Eldorado_${hoje}.xlsx`);
 }
