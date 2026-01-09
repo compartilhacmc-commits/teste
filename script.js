@@ -362,11 +362,15 @@ function updateCards() {
 // ATUALIZAR GRÁFICOS
 // ===================================
 function updateCharts() {
-    // Gráfico de Unidades (HORIZONTAL VERDE)
+    // ✅ CORREÇÃO: Gráfico de Unidades (SOMENTE COM STATUS PREENCHIDO)
     const unidadesCount = {};
     filteredData.forEach(item => {
-        const unidade = item['Unidade Solicitante'] || 'Não informado';
-        unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
+        // ✅ SÓ CONTA SE STATUS ESTIVER PREENCHIDO
+        const status = item['Status'];
+        if (status && status.trim() !== '') {
+            const unidade = item['Unidade Solicitante'] || 'Não informado';
+            unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
+        }
     });
 
     const unidadesLabels = Object.keys(unidadesCount)
@@ -376,11 +380,15 @@ function updateCharts() {
 
     createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
 
-    // Gráfico de Especialidades (HORIZONTAL VERMELHO)
+    // ✅ CORREÇÃO: Gráfico de Especialidades (SOMENTE COM STATUS PREENCHIDO)
     const especialidadesCount = {};
     filteredData.forEach(item => {
-        const especialidade = item['Cbo Especialidade'] || 'Não informado';
-        especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
+        // ✅ SÓ CONTA SE STATUS ESTIVER PREENCHIDO
+        const status = item['Status'];
+        if (status && status.trim() !== '') {
+            const especialidade = item['Cbo Especialidade'] || 'Não informado';
+            especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
+        }
     });
 
     const especialidadesLabels = Object.keys(especialidadesCount)
@@ -390,7 +398,7 @@ function updateCharts() {
 
     createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#ef4444');
 
-    // Gráfico de Status (VERTICAL LARANJA)
+    // Gráfico de Status (VERTICAL LARANJA) - mantido sem alteração
     const statusCount = {};
     filteredData.forEach(item => {
         const status = item['Status'] || 'Não informado';
@@ -403,7 +411,7 @@ function updateCharts() {
 
     createVerticalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
 
-    // Gráfico de Pizza por Status (legenda "Status + %")
+    // Gráfico de Pizza por Status - mantido sem alteração
     createPieChart('chartPizzaStatus', statusLabels, statusValues);
 }
 
@@ -426,7 +434,10 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
                 data: data,
                 backgroundColor: color,
                 borderWidth: 0,
-                borderRadius: 4
+                borderRadius: 4,
+                // ✅ CORREÇÃO: BARRAS MAIS LARGAS
+                barPercentage: 0.75,
+                categoryPercentage: 0.85
             }]
         },
         options: {
@@ -554,14 +565,14 @@ function createVerticalBarChart(canvasId, labels, data, color) {
                 const dataset = chart.data.datasets[0];
 
                 ctx.save();
-                ctx.fillStyle = '#000000';      // preto
-                ctx.font = 'bold 14px Arial';   // negrito
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
 
                 meta.data.forEach((bar, i) => {
                     const value = dataset.data[i];
-                    ctx.fillText(String(value), bar.x, bar.y - 6); // fora/acima
+                    ctx.fillText(String(value), bar.x, bar.y - 6);
                 });
 
                 ctx.restore();
@@ -800,7 +811,7 @@ function refreshData() {
 }
 
 // ===================================
-// DOWNLOAD EXCEL (mantido; já inclui "Solicitação")
+// DOWNLOAD EXCEL
 // ===================================
 function downloadExcel() {
     if (filteredData.length === 0) {
