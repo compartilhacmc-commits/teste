@@ -327,10 +327,11 @@ body {
     border-bottom: 2px solid var(--cinza-200);
 }
 
+/* ✅ CORREÇÃO: ALTURA AUMENTADA PARA GRÁFICOS HORIZONTAIS */
 .chart-wrapper {
     position: relative;
-    height: 420px;
-    min-height: 350px;
+    height: 520px;
+    min-height: 450px;
 }
 
 /* ✅ Pizza com altura própria (mais bonita com legenda ao lado) */
@@ -355,7 +356,7 @@ body {
 
 @media (max-width: 768px) {
     .chart-wrapper {
-        height: 360px;
+        height: 400px;
     }
 
     .chart-wrapper-pizza {
@@ -630,7 +631,7 @@ html {
 }
 
 /* ===================================
-   MULTI SELECT (CHECKBOX) - ADICIONADO
+   MULTI SELECT (CHECKBOX)
 =================================== */
 .multi-select { position: relative; }
 
