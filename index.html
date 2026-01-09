@@ -20,7 +20,7 @@
 
     <!-- Container Principal -->
     <div class="container">
-        
+
         <!-- Barra de Status e Ações -->
         <div class="top-actions">
             <div class="connection-status">
@@ -48,7 +48,7 @@
                     <p class="card-value" id="totalPendencias">0</p>
                 </div>
             </div>
-            
+
             <div class="metric-card card-warning">
                 <div class="card-icon">
                     <i class="fas fa-clock"></i>
@@ -58,7 +58,7 @@
                     <p class="card-value" id="pendencias15">0</p>
                 </div>
             </div>
-            
+
             <div class="metric-card card-danger">
                 <div class="card-icon">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -68,7 +68,7 @@
                     <p class="card-value" id="pendencias30">0</p>
                 </div>
             </div>
-            
+
             <div class="metric-card card-info">
                 <div class="card-icon">
                     <i class="fas fa-percentage"></i>
@@ -92,21 +92,21 @@
                         <option value="">Todos</option>
                     </select>
                 </div>
-                
+
                 <div class="filter-box">
                     <label for="filterUnidade">Unidade Solicitante:</label>
                     <select id="filterUnidade" class="filter-select" onchange="applyFilters()">
                         <option value="">Todas</option>
                     </select>
                 </div>
-                
+
                 <div class="filter-box">
                     <label for="filterEspecialidade">CBO Especialidade:</label>
                     <select id="filterEspecialidade" class="filter-select" onchange="applyFilters()">
                         <option value="">Todas</option>
                     </select>
                 </div>
-                
+
                 <div class="filter-box">
                     <label for="filterPrestador">Prestador:</label>
                     <select id="filterPrestador" class="filter-select" onchange="applyFilters()">
@@ -127,25 +127,25 @@
                     <canvas id="chartUnidades"></canvas>
                 </div>
             </div>
-            
+
             <div class="chart-box">
                 <h3 class="chart-title">Pendências por Especialidade</h3>
                 <div class="chart-wrapper">
                     <canvas id="chartEspecialidades"></canvas>
                 </div>
             </div>
-            
+
             <div class="chart-box">
                 <h3 class="chart-title">Pendências por Status</h3>
-                <div class="chart-wrapper">
+                <div class="chart-wrapper chart-wrapper-status">
                     <canvas id="chartStatus"></canvas>
                 </div>
             </div>
-            
-            <!-- NOVO GRÁFICO DE PIZZA -->
+
+            <!-- GRÁFICO DE PIZZA -->
             <div class="chart-box">
                 <h3 class="chart-title">Distribuição Percentual por Status</h3>
-                <div class="chart-wrapper">
+                <div class="chart-wrapper chart-wrapper-pizza">
                     <canvas id="chartPizzaStatus"></canvas>
                 </div>
             </div>
@@ -156,18 +156,18 @@
             <h3 class="section-title">
                 <i class="fas fa-table"></i> Todas as Demandas
             </h3>
-            
+
             <!-- CAIXA DE PESQUISA -->
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Pesquisar na tabela..." onkeyup="searchTable()">
             </div>
-            
+
             <div class="table-wrapper">
                 <table class="data-table" id="dataTable">
                     <thead>
                         <tr>
-                            <th>Solicitação</th>
+                            <!-- REMOVIDO: Solicitação -->
                             <th>Data Solicitação</th>
                             <th>Nº Prontuário</th>
                             <th>Telefone</th>
@@ -183,7 +183,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="12" class="loading-message">
+                            <td colspan="11" class="loading-message">
                                 <i class="fas fa-spinner fa-spin"></i> Carregando dados...
                             </td>
                         </tr>
@@ -219,6 +219,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
