@@ -16,6 +16,18 @@ let chartStatus = null;
 let chartPizzaStatus = null;
 
 // ===================================
+// FUNÇÃO AUXILIAR PARA BUSCAR VALOR DE COLUNA
+// ===================================
+function getColumnValue(item, possibleNames, defaultValue = '-') {
+    for (let name of possibleNames) {
+        if (item.hasOwnProperty(name) && item[name]) {
+            return item[name];
+        }
+    }
+    return defaultValue;
+}
+
+// ===================================
 // INICIALIZAÇÃO
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -60,7 +72,8 @@ async function loadData() {
             });
         
         console.log(`Total de registros carregados: ${allData.length}`);
-        console.log('Primeiro registro:', allData[0]);
+        console.log('Primeiro registro completo:', allData[0]);
+        console.log('Todas as chaves do primeiro registro:', Object.keys(allData[0]));
         
         filteredData = [...allData];
         
@@ -340,7 +353,7 @@ function updateCharts() {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE BARRAS HORIZONTAIS - CORRIGIDO
+// CRIAR GRÁFICO DE BARRAS HORIZONTAIS
 // ===================================
 function createHorizontalBarChart(canvasId, labels, data, color) {
     const ctx = document.getElementById(canvasId);
@@ -424,14 +437,13 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
                     const meta = chart.getDatasetMeta(i);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
-                            // CORREÇÃO: LEGENDAS FORA DAS BARRAS, COR PRETA, NEGRITO
                             ctx.fillStyle = '#000000';
                             ctx.font = 'bold 14px Arial';
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
                             
                             const dataString = dataset.data[index].toString();
-                            const xPos = element.x + 10; // FORA DA BARRA
+                            const xPos = element.x + 10;
                             const yPos = element.y;
                             
                             ctx.fillText(dataString, xPos, yPos);
@@ -454,7 +466,7 @@ function createHorizontalBarChart(canvasId, labels, data, color) {
 }
 
 // ===================================
-// CRIAR GRÁFICO DE PIZZA - CORRIGIDO
+// CRIAR GRÁFICO DE PIZZA
 // ===================================
 function createPieChart(canvasId, labels, data) {
     const ctx = document.getElementById(canvasId);
@@ -463,7 +475,6 @@ function createPieChart(canvasId, labels, data) {
         chartPizzaStatus.destroy();
     }
     
-    // Paleta de cores vibrantes
     const colors = [
         '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
         '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#84cc16'
@@ -543,11 +554,9 @@ function createPieChart(canvasId, labels, data) {
                     const meta = chart.getDatasetMeta(datasetIndex);
                     if (!meta.hidden) {
                         meta.data.forEach(function(element, index) {
-                            // CORREÇÃO: LEGENDAS DENTRO DO GRÁFICO, COR BRANCA
                             const data = dataset.data[index];
                             const percentage = percentages[index];
                             
-                            // Só mostra se for maior que 5% para não poluir
                             if (parseFloat(percentage) > 5) {
                                 ctx.fillStyle = '#ffffff';
                                 ctx.font = 'bold 13px Arial';
@@ -567,7 +576,7 @@ function createPieChart(canvasId, labels, data) {
 }
 
 // ===================================
-// ATUALIZAR TABELA - CORRIGIDA
+// ATUALIZAR TABELA - CORRIGIDA COM BUSCA INTELIGENTE
 // ===================================
 function updateTable() {
     const tbody = document.getElementById('tableBody');
@@ -583,27 +592,83 @@ function updateTable() {
     filteredData.forEach(item => {
         const row = document.createElement('tr');
         
-        // CORREÇÃO: Busca múltiplas variações possíveis do nome da coluna
-        const numeroSolicitacao = item['Numero da Solicitação'] || 
-                                  item['Numero Solicitação'] || 
-                                  item['Número da Solicitação'] || 
-                                  item['Número Solicitação'] ||
-                                  item['N° da Solicitação'] ||
-                                  item['N° Solicitação'] || '-';
+        // CORREÇÃO PRINCIPAL: Busca todas as variações possíveis do nome da coluna
+        const numeroSolicitacao = getColumnValue(item, [
+            'Numero da Solicitação',
+            'Numero Solicitação',
+            'Número da Solicitação',
+            'Número Solicitação',
+            'N° da Solicitação',
+            'N° Solicitação',
+            'Nº da Solicitação',
+            'Nº Solicitação',
+            'numero da solicitacao',
+            'numero solicitacao'
+        ]);
+        
+        const dataSolicitacao = getColumnValue(item, [
+            'Data da Solicitação',
+            'Data Solicitação',
+            'Data da Solicitacao',
+            'Data Solicitacao'
+        ]);
+        
+        const prontuario = getColumnValue(item, [
+            'Nº Prontuário',
+            'N° Prontuário',
+            'Numero Prontuário',
+            'Prontuário',
+            'Prontuario'
+        ]);
+        
+        const dataInicio = getColumnValue(item, [
+            'Data Início da Pendência',
+            'Data Inicio da Pendencia',
+            'Data Início Pendência',
+            'Data Inicio Pendencia'
+        ]);
+        
+        const prazo15 = getColumnValue(item, [
+            'Data Final do Prazo (Pendência com 15 dias)',
+            'Data Final do Prazo (Pendencia com 15 dias)',
+            'Data Final Prazo 15d',
+            'Prazo 15 dias'
+        ]);
+        
+        const email15 = getColumnValue(item, [
+            'Data do envio do Email (Prazo: Pendência com 15 dias)',
+            'Data do envio do Email (Prazo: Pendencia com 15 dias)',
+            'Data Envio Email 15d',
+            'Email 15 dias'
+        ]);
+        
+        const prazo30 = getColumnValue(item, [
+            'Data Final do Prazo (Pendência com 30 dias)',
+            'Data Final do Prazo (Pendencia com 30 dias)',
+            'Data Final Prazo 30d',
+            'Prazo 30 dias'
+        ]);
+        
+        const email30 = getColumnValue(item, [
+            'Data do envio do Email (Prazo: Pendência com 30 dias)',
+            'Data do envio do Email (Prazo: Pendencia com 30 dias)',
+            'Data Envio Email 30d',
+            'Email 30 dias'
+        ]);
         
         row.innerHTML = `
             <td>${numeroSolicitacao}</td>
-            <td>${formatDate(item['Data da Solicitação'])}</td>
-            <td>${item['Nº Prontuário'] || item['N° Prontuário'] || '-'}</td>
+            <td>${formatDate(dataSolicitacao)}</td>
+            <td>${prontuario}</td>
             <td>${item['Telefone'] || '-'}</td>
             <td>${item['Unidade Solicitante'] || '-'}</td>
             <td>${item['Cbo Especialidade'] || '-'}</td>
-            <td>${formatDate(item['Data Início da Pendência'])}</td>
+            <td>${formatDate(dataInicio)}</td>
             <td>${item['Status'] || '-'}</td>
-            <td>${formatDate(item['Data Final do Prazo (Pendência com 15 dias)'])}</td>
-            <td>${formatDate(item['Data do envio do Email (Prazo: Pendência com 15 dias)'])}</td>
-            <td>${formatDate(item['Data Final do Prazo (Pendência com 30 dias)'])}</td>
-            <td>${formatDate(item['Data do envio do Email (Prazo: Pendência com 30 dias)'])}</td>
+            <td>${formatDate(prazo15)}</td>
+            <td>${formatDate(email15)}</td>
+            <td>${formatDate(prazo30)}</td>
+            <td>${formatDate(email30)}</td>
         `;
         tbody.appendChild(row);
     });
@@ -617,7 +682,7 @@ function updateTable() {
 // FUNÇÕES AUXILIARES
 // ===================================
 function parseDate(dateString) {
-    if (!dateString) return null;
+    if (!dateString || dateString === '-') return null;
     
     let match = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (match) {
@@ -633,7 +698,7 @@ function parseDate(dateString) {
 }
 
 function formatDate(dateString) {
-    if (!dateString) return '-';
+    if (!dateString || dateString === '-') return '-';
     
     const date = parseDate(dateString);
     if (!date || isNaN(date.getTime())) return dateString;
@@ -662,19 +727,26 @@ function downloadExcel() {
     }
     
     const exportData = filteredData.map(item => ({
-        'Numero da Solicitação': item['Numero da Solicitação'] || item['Numero Solicitação'] || item['N° Solicitação'] || '',
-        'Data Solicitação': item['Data da Solicitação'] || '',
-        'Nº Prontuário': item['Nº Prontuário'] || item['N° Prontuário'] || '',
+        'Numero da Solicitação': getColumnValue(item, [
+            'Numero da Solicitação',
+            'Numero Solicitação',
+            'Número da Solicitação',
+            'Número Solicitação',
+            'N° da Solicitação',
+            'N° Solicitação'
+        ], ''),
+        'Data Solicitação': getColumnValue(item, ['Data da Solicitação', 'Data Solicitação'], ''),
+        'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'N° Prontuário'], ''),
         'Telefone': item['Telefone'] || '',
         'Unidade Solicitante': item['Unidade Solicitante'] || '',
         'CBO Especialidade': item['Cbo Especialidade'] || '',
-        'Data Início Pendência': item['Data Início da Pendência'] || '',
+        'Data Início Pendência': getColumnValue(item, ['Data Início da Pendência'], ''),
         'Status': item['Status'] || '',
         'Prestador': item['Prestador'] || '',
-        'Data Final Prazo 15d': item['Data Final do Prazo (Pendência com 15 dias)'] || '',
-        'Data Envio Email 15d': item['Data do envio do Email (Prazo: Pendência com 15 dias)'] || '',
-        'Data Final Prazo 30d': item['Data Final do Prazo (Pendência com 30 dias)'] || '',
-        'Data Envio Email 30d': item['Data do envio do Email (Prazo: Pendência com 30 dias)'] || ''
+        'Data Final Prazo 15d': getColumnValue(item, ['Data Final do Prazo (Pendência com 15 dias)'], ''),
+        'Data Envio Email 15d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 15 dias)'], ''),
+        'Data Final Prazo 30d': getColumnValue(item, ['Data Final do Prazo (Pendência com 30 dias)'], ''),
+        'Data Envio Email 30d': getColumnValue(item, ['Data do envio do Email (Prazo: Pendência com 30 dias)'], '')
     }));
     
     const ws = XLSX.utils.json_to_sheet(exportData);
