@@ -136,7 +136,7 @@
                     </div>
                 </div>
 
-                <!-- ✅ FILTRO POR MÊS -->
+                <!-- FILTRO POR MÊS -->
                 <div class="filter-box">
                     <label>Filtrar por Mês:</label>
                     <select class="filter-select" id="filterMes" onchange="applyFilters()">
@@ -150,15 +150,7 @@
             </button>
         </div>
 
-        <!-- ✅ GRÁFICO PENDÊNCIAS POR DISTRITO (DESTAQUE - LINHA COMPLETA) -->
-        <div class="chart-box chart-box-full">
-            <h3 class="chart-title">Registros Geral de Pendências por Distrito</h3>
-            <div class="chart-wrapper-distrito">
-                <canvas id="chartDistritos"></canvas>
-            </div>
-        </div>
-
-        <!-- ✅ NOVO: GRÁFICO PENDÊNCIAS NÃO RESOLVIDAS POR DISTRITO (BARRAS VERMELHAS) -->
+        <!-- ✅ NOVO: GRÁFICO PENDÊNCIAS NÃO RESOLVIDAS POR DISTRITO (BARRAS VERMELHAS) - AGORA PRIMEIRO -->
         <div class="chart-box chart-box-full">
             <h3 class="chart-title">Pendências Não Resolvidas por Distrito</h3>
             <div class="chart-wrapper-distrito">
@@ -166,23 +158,25 @@
             </div>
         </div>
 
+        <!-- ✅ GRÁFICO PENDÊNCIAS POR DISTRITO (DESTAQUE - LINHA COMPLETA) - AGORA SEGUNDO -->
+        <div class="chart-box chart-box-full">
+            <h3 class="chart-title">Registros Geral de Pendências por Distrito</h3>
+            <div class="chart-wrapper-distrito">
+                <canvas id="chartDistritos"></canvas>
+            </div>
+        </div>
+
+        <!-- ✅ NOVO: GRÁFICO DE RESOLUTIVIDADE POR DISTRITO -->
+        <div class="chart-box chart-box-full">
+            <h3 class="chart-title">Estatística de Resolutividade por Distrito</h3>
+            <div class="chart-wrapper-distrito">
+                <canvas id="chartResolutividadeDistrito"></canvas>
+            </div>
+        </div>
+
         <!-- Gráficos -->
         <div class="charts-container">
-            <div class="chart-box">
-                <h3 class="chart-title">Registros Geral de Pendências por Especialidade</h3>
-                <div class="chart-wrapper">
-                    <canvas id="chartEspecialidades"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-box">
-                <h3 class="chart-title">Registros Geral de Pendências por Status</h3>
-                <div class="chart-wrapper chart-wrapper-status">
-                    <canvas id="chartStatus"></canvas>
-                </div>
-            </div>
-
-            <!-- ✅ GRÁFICO: PENDÊNCIAS POR PRESTADOR -->
+            <!-- ✅ GRÁFICO: PENDÊNCIAS POR PRESTADOR - MOVIDO PARA ANTES DE ESPECIALIDADES -->
             <div class="chart-box">
                 <h3 class="chart-title">Registros Geral de Pendências por Prestador</h3>
                 <div class="chart-wrapper">
@@ -198,11 +192,33 @@
                 </div>
             </div>
 
+            <div class="chart-box">
+                <h3 class="chart-title">Registros Geral de Pendências por Especialidade</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartEspecialidades"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <h3 class="chart-title">Registros Geral de Pendências por Status</h3>
+                <div class="chart-wrapper chart-wrapper-status">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+
             <!-- GRÁFICO DE PIZZA -->
             <div class="chart-box">
                 <h3 class="chart-title">Distribuição Percentual por Status</h3>
                 <div class="chart-wrapper chart-wrapper-pizza">
                     <canvas id="chartPizzaStatus"></canvas>
+                </div>
+            </div>
+
+            <!-- ✅ NOVO: GRÁFICO DE RESOLUTIVIDADE POR PRESTADOR -->
+            <div class="chart-box">
+                <h3 class="chart-title">Estatística de Resolutividade por Prestador</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartResolutividadePrestador"></canvas>
                 </div>
             </div>
         </div>
@@ -230,4 +246,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
