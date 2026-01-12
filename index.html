@@ -12,9 +12,9 @@
     <header class="header">
         <div class="header-content">
             <h1 class="header-title">DIRETORIA DE REGULAÇÃO</h1>
-            <h2 class="header-subtitle">Controle de Pêndencias - Sistema Vivver</h2>
+            <h2 class="header-subtitle">Controle de Pendências - Sistema Vivver</h2>
             <h3 class="header-subtitle">Central de Marcação de Consultas / Consolidado Geral</h3>
-            <p class="footer-credits">Referência Giovanna Telefone - 3198-6768</p>
+            <p class="footer-credits">Referência Giovanna</p>
             <p class="footer-credits">Página Criada por Ana P. A. Silva Matr:201704/Assistente Adm. Diretoria de Regulação - Ceaps</p>
         </div>
     </header>
@@ -88,18 +88,6 @@
             </h3>
 
             <div class="filters-grid">
-                <!-- ORIGEM (nova opção) -->
-                <div class="filter-box">
-                    <label>Origem dos Dados:</label>
-                    <div class="multi-select" id="msOrigem">
-                        <button type="button" class="multi-select-btn" onclick="toggleMultiSelect('msOrigem')">
-                            <span class="multi-select-text" id="msOrigemText">Todas</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="multi-select-panel" id="msOrigemPanel"></div>
-                    </div>
-                </div>
-
                 <!-- STATUS (multi) -->
                 <div class="filter-box">
                     <label>Status:</label>
@@ -148,7 +136,7 @@
                     </div>
                 </div>
 
-                <!-- ✅ NOVO FILTRO POR MÊS -->
+                <!-- ✅ FILTRO POR MÊS -->
                 <div class="filter-box">
                     <label>Filtrar por Mês:</label>
                     <select class="filter-select" id="filterMes" onchange="applyFilters()">
@@ -162,26 +150,51 @@
             </button>
         </div>
 
+        <!-- ✅ GRÁFICO PENDÊNCIAS POR DISTRITO (DESTAQUE - LINHA COMPLETA) -->
+        <div class="chart-box chart-box-full">
+            <h3 class="chart-title">Registros Geral de Pendências por Distrito</h3>
+            <div class="chart-wrapper-distrito">
+                <canvas id="chartDistritos"></canvas>
+            </div>
+        </div>
+
+        <!-- ✅ NOVO: GRÁFICO PENDÊNCIAS NÃO RESOLVIDAS POR DISTRITO (BARRAS VERMELHAS) -->
+        <div class="chart-box chart-box-full">
+            <h3 class="chart-title">Pendências Não Resolvidas por Distrito</h3>
+            <div class="chart-wrapper-distrito">
+                <canvas id="chartDistritosPendentes"></canvas>
+            </div>
+        </div>
+
         <!-- Gráficos -->
         <div class="charts-container">
             <div class="chart-box">
-                <h3 class="chart-title">Registros por Unidade de Saúde</h3>
-                <div class="chart-wrapper">
-                    <canvas id="chartUnidades"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-box">
-                <h3 class="chart-title">Registros por Especialidade</h3>
+                <h3 class="chart-title">Registros Geral de Pendências por Especialidade</h3>
                 <div class="chart-wrapper">
                     <canvas id="chartEspecialidades"></canvas>
                 </div>
             </div>
 
             <div class="chart-box">
-                <h3 class="chart-title">Registros por Status</h3>
+                <h3 class="chart-title">Registros Geral de Pendências por Status</h3>
                 <div class="chart-wrapper chart-wrapper-status">
                     <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+
+            <!-- ✅ GRÁFICO: PENDÊNCIAS POR PRESTADOR -->
+            <div class="chart-box">
+                <h3 class="chart-title">Registros Geral de Pendências por Prestador</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartPrestadores"></canvas>
+                </div>
+            </div>
+
+            <!-- ✅ NOVO: GRÁFICO PENDÊNCIAS NÃO RESOLVIDAS POR PRESTADOR (BARRAS VERDE ESCURO) -->
+            <div class="chart-box">
+                <h3 class="chart-title">Pendências Não Resolvidas por Prestador</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartPrestadoresPendentes"></canvas>
                 </div>
             </div>
 
@@ -194,52 +207,6 @@
             </div>
         </div>
 
-        <!-- Tabela de Dados -->
-        <div class="table-container">
-            <h3 class="section-title">
-                <i class="fas fa-table"></i> Todas as Demandas
-            </h3>
-
-            <!-- CAIXA DE PESQUISA -->
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Pesquisar na tabela..." onkeyup="searchTable()">
-            </div>
-
-            <div class="table-wrapper">
-                <table class="data-table" id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Origem</th>
-                            <th>Solicitação</th>
-                            <th>Data Solicitação</th>
-                            <th>Nº Prontuário</th>
-                            <th>Telefone</th>
-                            <th>Unidade Solicitante</th>
-                            <th>CBO Especialidade</th>
-                            <th>Data Início Pendência</th>
-                            <th>Status</th>
-                            <th>Data Final Prazo (15d)</th>
-                            <th>Data Envio Email (15d)</th>
-                            <th>Data Final Prazo (30d)</th>
-                            <th>Data Envio Email (30d)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr>
-                            <td colspan="13" class="loading-message">
-                                <i class="fas fa-spinner fa-spin"></i> Carregando dados...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="table-footer" id="tableFooter">
-                Mostrando de 1 até 0 de 0 registros
-            </div>
-        </div>
-
     </div>
 
     <!-- Rodapé -->
@@ -247,7 +214,6 @@
         <p>DIRETORIA DE REGULAÇÃO</p>
         <p>CENTRAL DE MARCAÇÃO DE CONSULTAS</p>
         <p>REFERÊNCIA GIOVANNA</p>
-        <p>Telefone 3198-6768 </p>
         <p class="footer-credits">Página Criada por Ana P. A. Silva Matr:201704/Assistente Adm. Diretoria de Regulação - Ceaps</p>
     </footer>
 
@@ -264,5 +230,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
