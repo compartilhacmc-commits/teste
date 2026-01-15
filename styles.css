@@ -302,25 +302,7 @@ body {
 }
 
 /* ===================================
-   ✅ GRÁFICO DESTAQUE - PENDÊNCIAS POR DISTRITO
-=================================== */
-.chart-box-full {
-    background: var(--branco);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--sombra-md);
-    margin-bottom: 2rem;
-    border: 3px solid var(--azul-escuro);
-}
-
-.chart-wrapper-distrito {
-    position: relative;
-    height: 380px;
-    min-height: 350px;
-}
-
-/* ===================================
-   GRÁFICOS - AJUSTES DE TAMANHO
+   GRÁFICOS
 =================================== */
 .charts-container {
     display: grid;
@@ -345,22 +327,24 @@ body {
     border-bottom: 2px solid var(--cinza-200);
 }
 
-/* ✅ AJUSTE DE ALTURA DOS GRÁFICOS */
+/* ✅ CORREÇÃO: ALTURA AUMENTADA PARA GRÁFICOS HORIZONTAIS */
 .chart-wrapper {
     position: relative;
-    height: 380px;
-    min-height: 350px;
+    height: 520px;
+    min-height: 450px;
 }
 
+/* ✅ Pizza com altura própria (mais bonita com legenda ao lado) */
 .chart-wrapper-pizza {
     position: relative;
-    height: 380px;
-    min-height: 350px;
+    height: 450px;
+    min-height: 400px;
 }
 
+/* ✅ Status vertical: deixa um pouco mais alto para caber rótulos */
 .chart-wrapper-status {
-    height: 380px;
-    min-height: 350px;
+    height: 460px;
+    min-height: 380px;
 }
 
 /* Responsividade para gráficos */
@@ -372,20 +356,146 @@ body {
 
 @media (max-width: 768px) {
     .chart-wrapper {
-        height: 350px;
+        height: 400px;
     }
 
     .chart-wrapper-pizza {
-        height: 350px;
+        height: 380px;
     }
 
     .chart-wrapper-status {
-        height: 350px;
+        height: 380px;
     }
+}
 
-    .chart-wrapper-distrito {
-        height: 320px;
-    }
+/* ===================================
+   CAIXA DE PESQUISA
+=================================== */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--cinza-100);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    border: 2px solid var(--azul-medio);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--azul-claro);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box i {
+    color: var(--azul-medio);
+    font-size: 1.1rem;
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: var(--cinza-800);
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: var(--cinza-600);
+}
+
+/* ===================================
+   TABELA DE DADOS
+=================================== */
+.table-container {
+    background: var(--branco);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--sombra-md);
+    margin-bottom: 2rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 1rem;
+    border: 1px solid var(--cinza-300);
+    border-radius: 8px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table thead {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: var(--branco);
+}
+
+.data-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--cinza-300);
+    transition: all 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background: #e3f2fd;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.data-table tbody tr:nth-child(even):hover {
+    background: #e3f2fd;
+}
+
+.data-table td {
+    padding: 0.875rem 0.75rem;
+    color: var(--cinza-800);
+    border: 1px solid var(--cinza-300);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* ✅ DESTAQUE AMARELO PARA LINHAS VENCENDO EM 15 DIAS */
+.data-table tbody tr.row-vencendo-15 {
+    background-color: #fef3c7 !important;
+    font-weight: 600;
+}
+
+.data-table tbody tr.row-vencendo-15:hover {
+    background-color: #fde68a !important;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 3rem !important;
+    font-size: 1.1rem;
+    color: var(--azul-medio);
+    border: none !important;
+}
+
+.table-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--cinza-200);
+    color: var(--cinza-600);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 /* ===================================
@@ -519,7 +629,7 @@ body {
 .metric-card,
 .filters-container,
 .chart-box,
-.chart-box-full {
+.table-container {
     animation: fadeInUp 0.6s ease-out;
 }
 
@@ -614,3 +724,4 @@ html {
 
 .ms-item input{ width: 16px; height: 16px; }
 .ms-item span{ font-size: 0.95rem; color: var(--cinza-800); }
+
