@@ -1613,7 +1613,7 @@ function updateDemandasTable() {
 
       origem: item['_origem'] || '-',
 
-      numeroSolicitacao: getColumnValue(item, [
+      numeroSolicitacao: formatnumber(getColumnValue(item, [
         'Solicitação',
         'Solicitacâo',
         'Solicitaçâo',
