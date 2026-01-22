@@ -173,6 +173,62 @@ function getColumnValue(item, possibleNames, defaultValue = '-') {
 }
 
 // ===================================
+// ✅ NOVA FUNÇÃO: CALCULAR PRAZOS
+// ===================================
+function calcularPrazos(dataInicio) {
+  if (!dataInicio) return {
+    prazo15: '-',
+    email15: '-',
+    prazo30: '-',
+    email30: '-'
+  };
+
+  const dataInicioObj = parseDate(dataInicio);
+  if (!dataInicioObj || isNaN(dataInicioObj.getTime())) {
+    return {
+      prazo15: '-',
+      email15: '-',
+      prazo30: '-',
+      email30: '-'
+    };
+  }
+
+  // Calcular Data Final do Prazo (15 dias)
+  const prazo15Obj = new Date(dataInicioObj);
+  prazo15Obj.setDate(prazo15Obj.getDate() + 15);
+  
+  // Calcular Data do Envio do Email (13 dias - 2 dias antes do prazo de 15)
+  const email15Obj = new Date(dataInicioObj);
+  email15Obj.setDate(email15Obj.getDate() + 13);
+  
+  // Calcular Data Final do Prazo (30 dias)
+  const prazo30Obj = new Date(dataInicioObj);
+  prazo30Obj.setDate(prazo30Obj.getDate() + 30);
+  
+  // Calcular Data do Envio do Email (28 dias - 2 dias antes do prazo de 30)
+  const email30Obj = new Date(dataInicioObj);
+  email30Obj.setDate(email30Obj.getDate() + 28);
+
+  return {
+    prazo15: formatDateFromObj(prazo15Obj),
+    email15: formatDateFromObj(email15Obj),
+    prazo30: formatDateFromObj(prazo30Obj),
+    email30: formatDateFromObj(email30Obj)
+  };
+}
+
+// ===================================
+// ✅ NOVA FUNÇÃO: FORMATAR DATA A PARTIR DE OBJETO DATE
+// ===================================
+function formatDateFromObj(dateObj) {
+  if (!dateObj || isNaN(dateObj.getTime())) return '-';
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+// ===================================
 // MULTISELECT (CHECKBOX) HELPERS
 // ===================================
 function toggleMultiSelect(id) {
@@ -1284,11 +1340,7 @@ function createResolutividadePrestadorChart() {
   });
 
   const labels = Object.keys(prestadorStats)
-    .sort((a, b) => {
-      const percA = (prestadorStats[a].resolvidos / prestadorStats[a].total) * 100;
-      const percB = (prestadorStats[b].resolvidos / prestadorStats[b].total) * 100;
-      return percB - percA;
-    })
+    .sort((a, b) => prestadorStats[b].total - prestadorStats[a].total)
     .slice(0, 20);
 
   const percentuais = labels.map(p => {
@@ -1305,11 +1357,11 @@ function createResolutividadePrestadorChart() {
       datasets: [{
         label: 'Taxa de Resolutividade (%)',
         data: percentuais,
-        backgroundColor: '#0284c7',
+        backgroundColor: '#059669',
         borderWidth: 0,
-        borderRadius: 8,
-        barPercentage: 0.65,
-        categoryPercentage: 0.75
+        borderRadius: 6,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       }]
     },
     options: {
@@ -1317,13 +1369,13 @@ function createResolutividadePrestadorChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, labels: { font: { size: 14, weight: 'bold' }, color: '#0284c7' } },
+        legend: { display: true, labels: { font: { size: 14, weight: 'bold' }, color: '#059669' } },
         tooltip: {
           enabled: true,
-          backgroundColor: 'rgba(2, 132, 199, 0.9)',
-          titleFont: { size: 16, weight: 'bold' },
-          bodyFont: { size: 14 },
-          padding: 14,
+          backgroundColor: 'rgba(5, 150, 105, 0.9)',
+          titleFont: { size: 14, weight: 'bold' },
+          bodyFont: { size: 13 },
+          padding: 12,
           cornerRadius: 8,
           callbacks: {
             label: function(context) {
@@ -1349,20 +1401,34 @@ function createResolutividadePrestadorChart() {
           },
           grid: { color: 'rgba(0,0,0,0.06)' }
         },
-        y: { ticks: { font: { size: 13, weight: 'bold' }, color: '#0284c7' }, grid: { display: false } }
+        y: { ticks: { font: { size: 12, weight: 'bold' }, color: '#059669' }, grid: { display: false } }
       }
     }
   });
 }
 
 // ===================================
-// GRÁFICO: Pizza de Status
+// ✅ GRÁFICO DE PIZZA CORRIGIDO - NÚMEROS DENTRO DAS FATIAS
 // ===================================
 function createPieChart(canvasId, labels, data) {
   const ctx = document.getElementById(canvasId);
   if (chartPizzaStatus) chartPizzaStatus.destroy();
 
-  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
+  // Definir cores baseadas no STATUS (como na imagem)
+  const colorMap = {
+    'PENDENTE': '#3b82f6',      // Azul
+    'Pendente': '#3b82f6',
+    'CANCELADO': '#ef4444',     // Vermelho
+    'Cancelado': '#ef4444',
+    'RESOLVIDO': '#10b981',     // Verde
+    'Resolvido': '#10b981',
+    'AGENDADO': '#f59e0b',      // Laranja
+    'Agendado': '#f59e0b'
+  };
+
+  const colors = labels.map(label => colorMap[label] || '#8b5cf6');
+
+  const total = data.reduce((acc, v) => acc + v, 0);
 
   chartPizzaStatus = new Chart(ctx, {
     type: 'pie',
@@ -1370,7 +1436,7 @@ function createPieChart(canvasId, labels, data) {
       labels,
       datasets: [{
         data,
-        backgroundColor: colors.slice(0, labels.length),
+        backgroundColor: colors,
         borderWidth: 3,
         borderColor: '#ffffff'
       }]
@@ -1382,34 +1448,281 @@ function createPieChart(canvasId, labels, data) {
         legend: {
           position: 'right',
           labels: {
-            font: { size: 13, weight: 'bold' },
+            font: { size: 14, weight: 'bold' },
             color: '#111827',
-            padding: 15,
-            boxWidth: 20,
+            padding: 18,
+            boxWidth: 22,
             usePointStyle: true,
-            pointStyle: 'circle'
+            pointStyle: 'circle',
+            generateLabels: function(chart) {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  const percent = ((value / total) * 100).toFixed(1);
+                  return {
+                    text: `${label} (${percent}%)`,
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    hidden: false,
+                    index: i
+                  };
+                });
+              }
+              return [];
+            }
           }
         },
         tooltip: {
           enabled: true,
-          backgroundColor: 'rgba(17,24,39,0.9)',
-          titleFont: { size: 14, weight: 'bold' },
-          bodyFont: { size: 13 },
-          padding: 12,
-          cornerRadius: 8,
+          backgroundColor: 'rgba(17,24,39,0.95)',
+          titleFont: { size: 15, weight: 'bold' },
+          bodyFont: { size: 14 },
+          padding: 14,
+          cornerRadius: 10,
           callbacks: {
             label: function(context) {
               const label = context.label || '';
               const value = context.parsed || 0;
-              const total = context.dataset.data.reduce((acc, v) => acc + v, 0);
               const percent = ((value / total) * 100).toFixed(1);
               return `${label}: ${value} (${percent}%)`;
             }
           }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'pizzaInsideLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0);
+        const dataset = chart.data.datasets[0];
+        if (!meta || !meta.data) return;
+
+        ctx.save();
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        meta.data.forEach((slice, i) => {
+          const value = dataset.data[i];
+          const percent = ((value / total) * 100).toFixed(1);
+          
+          // Posição do centro da fatia
+          const midAngle = (slice.startAngle + slice.endAngle) / 2;
+          const radius = (slice.outerRadius + slice.innerRadius) / 2;
+          
+          const x = slice.x + Math.cos(midAngle) * radius * 0.7;
+          const y = slice.y + Math.sin(midAngle) * radius * 0.7;
+
+          // Texto branco com sombra para melhor legibilidade
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(0,0,0,0.5)';
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          
+          ctx.fillText(`${percent}%`, x, y);
+        });
+
+        ctx.restore();
+      }
+    }]
   });
+}
+
+// ===================================
+// ✅ FUNÇÃO DOWNLOAD EXCEL ATUALIZADA COM NOVAS COLUNAS
+// ===================================
+function downloadExcel() {
+  const dataToExport = filteredData
+    .filter(item => hasUsuarioPreenchido(item))
+    .map(item => {
+      const dataInicioPendencia = getColumnValue(item, [
+        'Data Início da Pendência',
+        'Data Inicio da Pendencia',
+        'Data Início Pendência',
+        'Data Inicio Pendencia'
+      ], '');
+
+      const prazos = calcularPrazos(dataInicioPendencia);
+
+      return {
+        'Distrito': item['_distrito'] || '',
+        'Tipo': item['_tipo'] || '',
+
+        'Nº Solicitação': getColumnValue(item, [
+          'Solicitação',
+          'SOLICITAÇÃO',
+          'Nº Solicitação',
+          'Numero Solicitação'
+        ], ''),
+
+        'Data Solicitação': formatDate(getColumnValue(item, [
+          'Data da Solicitação',
+          'DATA DA SOLICITAÇÃO',
+          'Data Solicitação',
+          'Data Solicitacao'
+        ], '')),
+
+        'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], ''),
+        
+        'Prestador': item['Prestador'] || '',
+        
+        'Unidade Solicitante': item['Unidade Solicitante'] || '',
+        
+        'CBO Especialidade': getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], ''),
+        
+        'Data Início da Pendência': formatDate(dataInicioPendencia),
+        
+        'Data Final do Prazo (Pendência com 15 dias)': prazos.prazo15,
+        'Data do envio do Email (Prazo: Pendência com 15 dias)': prazos.email15,
+        'Data Final do Prazo (Pendência com 30 dias)': prazos.prazo30,
+        'Data do envio do Email (Prazo: Pendência com 30 dias)': prazos.email30,
+        
+        'Status': item['Status'] || ''
+      };
+    });
+
+  const ws = XLSX.utils.json_to_sheet(dataToExport);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
+
+  const fileName = `Pendencias_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+}
+
+// ===================================
+// ✅ TABELA ATUALIZADA COM NOVAS COLUNAS
+// ===================================
+function updateDemandasTable() {
+  const baseItems = filteredData.filter(item => hasUsuarioPreenchido(item));
+
+  let rows = baseItems.map(item => {
+    const dataInicioPendencia = getColumnValue(item, [
+      'Data Início da Pendência',
+      'Data Inicio da Pendencia',
+      'Data Início Pendência',
+      'Data Inicio Pendencia'
+    ]);
+
+    const prazos = calcularPrazos(dataInicioPendencia);
+
+    return {
+      _item: item,
+      _dataInicio: parseDate(dataInicioPendencia),
+
+      origem: item['_origem'] || '-',
+
+      numeroSolicitacao: getColumnValue(item, [
+        'Solicitação',
+        'SOLICITAÇÃO',
+        'Nº Solicitação',
+        'Numero Solicitação'
+      ], '-'),
+
+      dataSolicitacao: formatDate(getColumnValue(item, [
+        'Data da Solicitação',
+        'DATA DA SOLICITAÇÃO',
+        'Data Solicitação',
+        'Data Solicitacao'
+      ], '-')),
+
+      prontuario: getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], '-'),
+      
+      prestador: getColumnValue(item, ['Prestador'], '-'),
+      
+      unidadeSolicitante: getColumnValue(item, ['Unidade Solicitante'], '-'),
+      
+      cboEspecialidade: getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], '-'),
+      
+      dataInicioPendencia: formatDate(dataInicioPendencia),
+      
+      prazo15: prazos.prazo15,
+      email15: prazos.email15,
+      prazo30: prazos.prazo30,
+      email30: prazos.email30,
+      
+      status: getColumnValue(item, ['Status'], '-')
+    };
+  });
+
+  if (tableSearchQuery) {
+    rows = rows.filter(r => {
+      return Object.values(r).some(val =>
+        String(val).toLowerCase().includes(tableSearchQuery)
+      );
+    });
+  }
+
+  const { pageRows, total, totalPages } = paginate(rows);
+
+  const thead = document.getElementById('demandasThead');
+  thead.innerHTML = `
+    <tr>
+      <th>Origem</th>
+      <th>Solicitação</th>
+      <th>Data Solicitação</th>
+      <th>Nº Prontuário</th>
+      <th>Prestador</th>
+      <th>Unidade Solicitante</th>
+      <th>CBO Especialidade</th>
+      <th>Data Início da Pendência</th>
+      <th>Data Final do Prazo (15 dias)</th>
+      <th>Data Envio Email (15 dias)</th>
+      <th>Data Final do Prazo (30 dias)</th>
+      <th>Data Envio Email (30 dias)</th>
+      <th>Status</th>
+    </tr>
+  `;
+
+  const tbody = document.getElementById('demandasTbody');
+  tbody.innerHTML = '';
+
+  const hoje = new Date();
+
+  pageRows.forEach(r => {
+    const tr = document.createElement('tr');
+
+    if (r._item['_tipo'] === 'PENDENTE' && r._dataInicio) {
+      const diasDecorridos = Math.floor((hoje - r._dataInicio) / (1000 * 60 * 60 * 24));
+      if (diasDecorridos >= 15) {
+        tr.style.backgroundColor = '#fefce8';
+        tr.style.boxShadow = 'inset 4px 0 0 #fde68a';
+      }
+    }
+
+    [
+      'origem',
+      'numeroSolicitacao',
+      'dataSolicitacao',
+      'prontuario',
+      'prestador',
+      'unidadeSolicitante',
+      'cboEspecialidade',
+      'dataInicioPendencia',
+      'prazo15',
+      'email15',
+      'prazo30',
+      'email30',
+      'status'
+    ].forEach(key => {
+      const td = document.createElement('td');
+      td.textContent = r[key] ?? '-';
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('tableInfo').textContent = `${total} registros`;
+  document.getElementById('pageIndicator').textContent = `Página ${tableCurrentPage} de ${totalPages}`;
+
+  const btns = document.querySelectorAll('.table-pagination .btn-page');
+  const btnPrev = btns[0];
+  const btnNext = btns[1];
+
+  if (btnPrev) btnPrev.disabled = (tableCurrentPage <= 1);
+  if (btnNext) btnNext.disabled = (tableCurrentPage >= totalPages);
 }
 
 // ===================================
@@ -1420,7 +1733,6 @@ function parseDate(dateStr) {
 
   const s = String(dateStr).trim();
 
-  // dd/mm/yyyy (opcionalmente com hora: dd/mm/yyyy hh:mm[:ss])
   let match = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?/);
   if (match) {
     const day = parseInt(match[1], 10);
@@ -1429,7 +1741,6 @@ function parseDate(dateStr) {
     return new Date(year, month, day);
   }
 
-  // yyyy-mm-dd (opcionalmente com hora)
   match = s.match(/(\d{4})-(\d{2})-(\d{2})(?:[T\s]\d{2}:\d{2}(?::\d{2})?)?/);
   if (match) {
     const year = parseInt(match[1], 10);
@@ -1455,94 +1766,14 @@ function formatDate(dateStr) {
 }
 
 // ===================================
-// REFRESH DATA
-// ===================================
-function refreshData() {
-  loadData();
-}
-
-// ===================================
-// DOWNLOAD EXCEL
-// ===================================
-function downloadExcel() {
-  const dataToExport = filteredData
-    .filter(item => hasUsuarioPreenchido(item))
-    .map(item => ({
-      'Distrito': item['_distrito'] || '',
-      'Tipo': item['_tipo'] || '',
-
-      'Nº Solicitação': getColumnValue(item, [
-        'Solicitação',
-        'SOLICITAÇÃO',
-        'Nº Solicitação',
-        'Numero Solicitação'
-      ], ''),
-
-      'Data Solicitação': formatDate(getColumnValue(item, [
-        'Data da Solicitação',
-        'DATA DA SOLICITAÇÃO',
-        'Data Solicitação',
-        'Data Solicitacao'
-      ], '')),
-
-      'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], ''),
-      'Prestador': item['Prestador'] || '',
-      'Unidade Solicitante': item['Unidade Solicitante'] || '',
-      'CBO Especialidade': getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], ''),
-      'Data Início da Pendência': formatDate(getColumnValue(item, ['Data Início da Pendência', 'Data Inicio da Pendencia'], '')),
-      'Status': item['Status'] || ''
-    }));
-
-  const ws = XLSX.utils.json_to_sheet(dataToExport);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Pendências');
-
-  const fileName = `Pendencias_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, fileName);
-}
-
-// ===================================
-// ALTERAR REGISTROS POR PÁGINA
-// ===================================
-function changeRecordsPerPage() {
-  const select = document.getElementById('recordsPerPage');
-  TABLE_PAGE_SIZE = parseInt(select.value, 10);
-  tableCurrentPage = 1;
-  document.getElementById('displayedRecords').textContent = TABLE_PAGE_SIZE;
-  updateDemandasTable();
-}
-
-// ===================================
-// TABELA: SEARCH
-// ===================================
-function onTableSearch() {
-  tableSearchQuery = document.getElementById('tableSearchInput').value.trim().toLowerCase();
-  tableCurrentPage = 1;
-  updateDemandasTable();
-}
-
-// ===================================
-// TABELA: NAVEGAÇÃO
-// ===================================
-function tablePrevPage() {
-  if (tableCurrentPage > 1) {
-    tableCurrentPage--;
-    updateDemandasTable();
-  }
-}
-
-function tableNextPage() {
-  tableCurrentPage++;
-  updateDemandasTable();
-}
-
-// ===================================
 // PAGINAÇÃO
 // ===================================
 function paginate(rows) {
   const total = rows.length;
   const totalPages = Math.max(1, Math.ceil(total / TABLE_PAGE_SIZE));
+
   if (tableCurrentPage > totalPages) tableCurrentPage = totalPages;
+  if (tableCurrentPage < 1) tableCurrentPage = 1;
 
   const start = (tableCurrentPage - 1) * TABLE_PAGE_SIZE;
   const end = start + TABLE_PAGE_SIZE;
@@ -1551,113 +1782,40 @@ function paginate(rows) {
   return { pageRows, total, totalPages };
 }
 
-// ===================================
-// TABELA: ATUALIZAR
-// ===================================
-function updateDemandasTable() {
-  const baseItems = filteredData.filter(item => hasUsuarioPreenchido(item));
-
-  let rows = baseItems.map(item => {
-    const dataInicioPendencia = getColumnValue(item, [
-      'Data Início da Pendência',
-      'Data Inicio da Pendencia',
-      'Data Início Pendência',
-      'Data Inicio Pendencia'
-    ]);
-
-    return {
-      _item: item,
-      _dataInicio: parseDate(dataInicioPendencia),
-
-      origem: item['_origem'] || '-',
-
-      numeroSolicitacao: getColumnValue(item, [
-        'Solicitação',
-        'SOLICITAÇÃO',
-        'Nº Solicitação',
-        'Numero Solicitação'
-      ], '-'),
-
-      dataSolicitacao: formatDate(getColumnValue(item, [
-        'Data da Solicitação',
-        'DATA DA SOLICITAÇÃO',
-        'Data Solicitação',
-        'Data Solicitacao'
-      ], '-')),
-
-      prontuario: getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], '-'),
-      unidadeSolicitante: getColumnValue(item, ['Unidade Solicitante'], '-'),
-      cboEspecialidade: getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], '-'),
-      dataInicioPendencia: formatDate(dataInicioPendencia),
-      status: getColumnValue(item, ['Status'], '-')
-    };
-  });
-
-  if (tableSearchQuery) {
-    rows = rows.filter(r => {
-      return Object.values(r).some(val =>
-        String(val).toLowerCase().includes(tableSearchQuery)
-      );
-    });
+function tablePrevPage() {
+  if (tableCurrentPage > 1) {
+    tableCurrentPage--;
+    updateDemandasTable();
   }
+}
 
-  const { pageRows, total, totalPages } = paginate(rows);
+function tableNextPage() {
+  const rows = filteredData.filter(item => hasUsuarioPreenchido(item));
+  const totalPages = Math.ceil(rows.length / TABLE_PAGE_SIZE);
+  if (tableCurrentPage < totalPages) {
+    tableCurrentPage++;
+    updateDemandasTable();
+  }
+}
 
-  const thead = document.getElementById('demandasThead');
-  thead.innerHTML = `
-    <tr>
-      <th>Origem</th>
-      <th>Solicitação</th>
-      <th>Data Solicitação</th>
-      <th>Nº Prontuário</th>
-      <th>Unidade Solicitante</th>
-      <th>CBO Especialidade</th>
-      <th>Data Início da Pendência</th>
-      <th>Status</th>
-    </tr>
-  `;
+function changeRecordsPerPage() {
+  const select = document.getElementById('recordsPerPage');
+  TABLE_PAGE_SIZE = parseInt(select.value, 10);
+  tableCurrentPage = 1;
+  document.getElementById('displayedRecords').textContent = TABLE_PAGE_SIZE;
+  updateDemandasTable();
+}
 
-  const tbody = document.getElementById('demandasTbody');
-  tbody.innerHTML = '';
+function onTableSearch() {
+  const input = document.getElementById('tableSearchInput');
+  tableSearchQuery = input.value.toLowerCase();
+  tableCurrentPage = 1;
+  updateDemandasTable();
+}
 
-  const hoje = new Date();
-
-  pageRows.forEach(r => {
-    const tr = document.createElement('tr');
-
-    if (r._item['_tipo'] === 'PENDENTE' && r._dataInicio) {
-      const diasDecorridos = Math.floor((hoje - r._dataInicio) / (1000 * 60 * 60 * 24));
-      if (diasDecorridos >= 15) {
-        tr.style.backgroundColor = '#fefce8';
-        tr.style.boxShadow = 'inset 4px 0 0 #fde68a'; // opcional: faixa lateral suave
-      }
-    }
-
-    [
-      'origem',
-      'numeroSolicitacao',
-      'dataSolicitacao',
-      'prontuario',
-      'unidadeSolicitante',
-      'cboEspecialidade',
-      'dataInicioPendencia',
-      'status'
-    ].forEach(key => {
-      const td = document.createElement('td');
-      td.textContent = r[key] ?? '-';
-      tr.appendChild(td);
-    });
-
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('tableInfo').textContent = `${total} registros`;
-  document.getElementById('pageIndicator').textContent = `Página ${tableCurrentPage} de ${totalPages}`;
-
-  const btns = document.querySelectorAll('.table-pagination .btn-page');
-  const btnPrev = btns[0];
-  const btnNext = btns[1];
-
-  if (btnPrev) btnPrev.disabled = (tableCurrentPage <= 1);
-  if (btnNext) btnNext.disabled = (tableCurrentPage >= totalPages);
+// ===================================
+// REFRESH DATA
+// ===================================
+function refreshData() {
+  loadData();
 }
