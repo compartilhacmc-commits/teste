@@ -9,7 +9,7 @@ function gvizCsvUrl(spreadsheetId, gid) {
 }
 
 const SHEETS = [
-  // DISTRITO ELDORADO 
+  // DISTRITO ELDORADO
   {
     name: 'PENDÊNCIAS ELDORADO',
     url: gvizCsvUrl('1r6NLcVkVLD5vp4UxPEa7TcreBpOd0qeNt-QREOG4Xr4', '278071504'),
@@ -23,7 +23,7 @@ const SHEETS = [
     tipo: 'RESOLVIDO'
   },
 
-  // DISTRITO INDUSTRIAL 
+  // DISTRITO INDUSTRIAL
   {
     name: 'PENDÊNCIAS INDUSTRIAL',
     url: gvizCsvUrl('14eUVIsWPubMve4DhVjVwlh7gin-qVyN3PspkwQ1PZMg', '278071504'),
@@ -65,7 +65,7 @@ const SHEETS = [
     tipo: 'RESOLVIDO'
   },
 
-  // DISTRITO RESSACA 
+  // DISTRITO RESSACA
   {
     name: 'PENDÊNCIAS RESSACA',
     url: gvizCsvUrl('1aIsq1a8Lb90M19TQdiJG_WyX7wzzC2WRohelJY6A-u8', '278071504'),
@@ -196,15 +196,15 @@ function calcularPrazos(dataInicio) {
   // Calcular Data Final do Prazo (15 dias)
   const prazo15Obj = new Date(dataInicioObj);
   prazo15Obj.setDate(prazo15Obj.getDate() + 15);
-  
+
   // Calcular Data do Envio do Email (13 dias - 2 dias antes do prazo de 15)
   const email15Obj = new Date(dataInicioObj);
   email15Obj.setDate(email15Obj.getDate() + 13);
-  
+
   // Calcular Data Final do Prazo (30 dias)
   const prazo30Obj = new Date(dataInicioObj);
   prazo30Obj.setDate(prazo30Obj.getDate() + 30);
-  
+
   // Calcular Data do Envio do Email (28 dias - 2 dias antes do prazo de 30)
   const email30Obj = new Date(dataInicioObj);
   email30Obj.setDate(email30Obj.getDate() + 28);
@@ -902,18 +902,18 @@ function createDistritoChart(canvasId, labels, data) {
         tooltip: { enabled: false }
       },
       scales: {
-        x: { 
-          ticks: { 
-            font: { size: 13, weight: 'bold' }, 
-            color: '#1e3a8a', 
-            maxRotation: 45, 
-            minRotation: 0 
-          }, 
-          grid: { display: false } 
+        x: {
+          ticks: {
+            font: { size: 13, weight: 'bold' },
+            color: '#1e3a8a',
+            maxRotation: 45,
+            minRotation: 0
+          },
+          grid: { display: false }
         },
-        y: { 
-          beginAtZero: true, 
-          ticks: { display: false }, 
+        y: {
+          beginAtZero: true,
+          ticks: { display: false },
           grid: { display: false },
           border: { display: false }
         }
@@ -976,18 +976,18 @@ function createDistritoPendenteChart(canvasId, labels, data) {
         tooltip: { enabled: false }
       },
       scales: {
-        x: { 
-          ticks: { 
-            font: { size: 13, weight: 'bold' }, 
-            color: '#dc2626', 
-            maxRotation: 45, 
-            minRotation: 0 
-          }, 
-          grid: { display: false } 
+        x: {
+          ticks: {
+            font: { size: 13, weight: 'bold' },
+            color: '#dc2626',
+            maxRotation: 45,
+            minRotation: 0
+          },
+          grid: { display: false }
         },
-        y: { 
-          beginAtZero: true, 
-          ticks: { display: false }, 
+        y: {
+          beginAtZero: true,
+          ticks: { display: false },
           grid: { display: false },
           border: { display: false }
         }
@@ -1134,18 +1134,18 @@ function createStatusChart(canvasId, labels, data) {
         tooltip: { enabled: false }
       },
       scales: {
-        x: { 
-          ticks: { 
-            font: { size: 13, weight: 'bold' }, 
-            color: '#f97316', 
-            maxRotation: 45, 
-            minRotation: 0 
-          }, 
-          grid: { display: false } 
+        x: {
+          ticks: {
+            font: { size: 13, weight: 'bold' },
+            color: '#f97316',
+            maxRotation: 45,
+            minRotation: 0
+          },
+          grid: { display: false }
         },
-        y: { 
-          beginAtZero: true, 
-          ticks: { display: false }, 
+        y: {
+          beginAtZero: true,
+          ticks: { display: false },
           grid: { display: false },
           border: { display: false }
         }
@@ -1408,7 +1408,7 @@ function createResolutividadePrestadorChart() {
 }
 
 // ===================================
-// ✅ GRÁFICO DE PIZZA CORRIGIDO - NÚMEROS DENTRO DAS FATIAS
+// GRÁFICO DE PIZZA
 // ===================================
 function createPieChart(canvasId, labels, data) {
   const ctx = document.getElementById(canvasId);
@@ -1416,13 +1416,13 @@ function createPieChart(canvasId, labels, data) {
 
   // Definir cores baseadas no STATUS (como na imagem)
   const colorMap = {
-    'PENDENTE': '#3b82f6',      // Azul
+    'PENDENTE': '#3b82f6',
     'Pendente': '#3b82f6',
-    'CANCELADO': '#ef4444',     // Vermelho
+    'CANCELADO': '#ef4444',
     'Cancelado': '#ef4444',
-    'RESOLVIDO': '#10b981',     // Verde
+    'RESOLVIDO': '#10b981',
     'Resolvido': '#10b981',
-    'AGENDADO': '#f59e0b',      // Laranja
+    'AGENDADO': '#f59e0b',
     'Agendado': '#f59e0b'
   };
 
@@ -1506,21 +1506,19 @@ function createPieChart(canvasId, labels, data) {
         meta.data.forEach((slice, i) => {
           const value = dataset.data[i];
           const percent = ((value / total) * 100).toFixed(1);
-          
-          // Posição do centro da fatia
+
           const midAngle = (slice.startAngle + slice.endAngle) / 2;
           const radius = (slice.outerRadius + slice.innerRadius) / 2;
-          
+
           const x = slice.x + Math.cos(midAngle) * radius * 0.7;
           const y = slice.y + Math.sin(midAngle) * radius * 0.7;
 
-          // Texto branco com sombra para melhor legibilidade
           ctx.fillStyle = '#ffffff';
           ctx.shadowColor = 'rgba(0,0,0,0.5)';
           ctx.shadowBlur = 4;
           ctx.shadowOffsetX = 1;
           ctx.shadowOffsetY = 1;
-          
+
           ctx.fillText(`${percent}%`, x, y);
         });
 
@@ -1565,20 +1563,20 @@ function downloadExcel() {
         ], '')),
 
         'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], ''),
-        
+
         'Prestador': item['Prestador'] || '',
-        
+
         'Unidade Solicitante': item['Unidade Solicitante'] || '',
-        
+
         'CBO Especialidade': getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], ''),
-        
+
         'Data Início da Pendência': formatDate(dataInicioPendencia),
-        
+
         'Data Final do Prazo (Pendência com 15 dias)': prazos.prazo15,
         'Data do envio do Email (Prazo: Pendência com 15 dias)': prazos.email15,
         'Data Final do Prazo (Pendência com 30 dias)': prazos.prazo30,
         'Data do envio do Email (Prazo: Pendência com 30 dias)': prazos.email30,
-        
+
         'Status': item['Status'] || ''
       };
     });
@@ -1592,7 +1590,7 @@ function downloadExcel() {
 }
 
 // ===================================
-// ✅ TABELA ATUALIZADA
+// TABELA ATUALIZADA
 // ===================================
 function updateDemandasTable() {
   const baseItems = filteredData.filter(item => hasUsuarioPreenchido(item));
@@ -1613,13 +1611,18 @@ function updateDemandasTable() {
 
       origem: item['_origem'] || '-',
 
-      numeroSolicitacao: formatnumber(getColumnValue(item, [
+      // 
+      numeroSolicitacao: getColumnValue(item, [
         'Solicitação',
         'Solicitacâo',
         'Solicitaçâo',
         'SOLICITAÇÃO',
         'Nº Solicitação',
-        'Numero Solicitação'
+        'Numero Solicitação',
+        'N Solicitação',
+        'N Solicitao',
+        'Número Solicitação',
+        'Numero da Solicitação'
       ], '-'),
 
       dataSolicitacao: formatDate(getColumnValue(item, [
@@ -1631,20 +1634,20 @@ function updateDemandasTable() {
       ], '')),
 
       prontuario: getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], '-'),
-      
+
       prestador: getColumnValue(item, ['Prestador'], '-'),
-      
+
       unidadeSolicitante: getColumnValue(item, ['Unidade Solicitante'], '-'),
-      
+
       cboEspecialidade: getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], '-'),
-      
+
       dataInicioPendencia: formatDate(dataInicioPendencia),
-      
+
       prazo15: prazos.prazo15,
       email15: prazos.email15,
       prazo30: prazos.prazo30,
       email30: prazos.email30,
-      
+
       status: getColumnValue(item, ['Status'], '-')
     };
   });
