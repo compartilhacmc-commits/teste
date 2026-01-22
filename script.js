@@ -1499,7 +1499,7 @@ function createPieChart(canvasId, labels, data) {
         if (!meta || !meta.data) return;
 
         ctx.save();
-        ctx.font = 'bold 13px Arial';
+        ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -1551,13 +1551,6 @@ function downloadExcel() {
         'Tipo': item['_tipo'] || '',
 
         'Nº Solicitação': getColumnValue(item, [
-          'Solicitação',
-          'SOLICITAÇÃO',
-          'Nº Solicitação',
-          'Numero Solicitação'
-        ], ''),
-
-           'Nº Solicitação': getColumnValue(item, [
           'Solicitação',
           'SOLICITAÇÃO',
           'Nº Solicitação',
@@ -1627,13 +1620,6 @@ function updateDemandasTable() {
         'Numero Solicitação'
       ], '-'),
 
-      numeroSolicitacao: getColumnValue(item, [
-        'Solicitação',
-        'SOLICITAÇÃO',
-        'Nº Solicitação',
-        'Numero Solicitação'
-      ], '-'),
-
       dataSolicitacao: formatDate(getColumnValue(item, [
         'Data da Solicitação',
         'DATA DA SOLICITAÇÃO',
@@ -1676,7 +1662,6 @@ function updateDemandasTable() {
       <th>Origem</th>
       <th>Solicitação</th>
       <th>Data Solicitação</th>
-      <th>Data Solicitação</th>
       <th>Nº Prontuário</th>
       <th>Prestador</th>
       <th>Unidade Solicitante</th>
@@ -1708,7 +1693,6 @@ function updateDemandasTable() {
 
     [
       'origem',
-      'numeroSolicitacao',
       'numeroSolicitacao',
       'dataSolicitacao',
       'prontuario',
