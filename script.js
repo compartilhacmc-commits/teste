@@ -1615,17 +1615,12 @@ function updateDemandasTable() {
 
       numeroSolicitacao: getColumnValue(item, [
         'Solicitação',
+        'Solicitacâo',
+        'Solicitaçâo',
         'SOLICITAÇÃO',
         'Nº Solicitação',
         'Numero Solicitação'
       ], '-'),
-
-      dataSolicitacao: formatDate(getColumnValue(item, [
-        'Data da Solicitação',
-        'DATA DA SOLICITAÇÃO',
-        'Data Solicitação',
-        'Data Solicitacao'
-      ], '-')),
 
       prontuario: getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], '-'),
       
