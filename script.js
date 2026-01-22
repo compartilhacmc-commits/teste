@@ -1499,7 +1499,7 @@ function createPieChart(canvasId, labels, data) {
         if (!meta || !meta.data) return;
 
         ctx.save();
-        ctx.font = 'bold 18px Arial';
+        ctx.font = 'bold 13px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -1531,7 +1531,7 @@ function createPieChart(canvasId, labels, data) {
 }
 
 // ===================================
-// ✅ FUNÇÃO DOWNLOAD EXCEL ATUALIZADA COM NOVAS COLUNAS
+// FUNÇÃO DOWNLOAD EXCEL
 // ===================================
 function downloadExcel() {
   const dataToExport = filteredData
@@ -1551,6 +1551,13 @@ function downloadExcel() {
         'Tipo': item['_tipo'] || '',
 
         'Nº Solicitação': getColumnValue(item, [
+          'Solicitação',
+          'SOLICITAÇÃO',
+          'Nº Solicitação',
+          'Numero Solicitação'
+        ], ''),
+
+           'Nº Solicitação': getColumnValue(item, [
           'Solicitação',
           'SOLICITAÇÃO',
           'Nº Solicitação',
@@ -1592,7 +1599,7 @@ function downloadExcel() {
 }
 
 // ===================================
-// ✅ TABELA ATUALIZADA COM NOVAS COLUNAS
+// ✅ TABELA ATUALIZADA
 // ===================================
 function updateDemandasTable() {
   const baseItems = filteredData.filter(item => hasUsuarioPreenchido(item));
@@ -1612,6 +1619,13 @@ function updateDemandasTable() {
       _dataInicio: parseDate(dataInicioPendencia),
 
       origem: item['_origem'] || '-',
+
+      numeroSolicitacao: getColumnValue(item, [
+        'Solicitação',
+        'SOLICITAÇÃO',
+        'Nº Solicitação',
+        'Numero Solicitação'
+      ], '-'),
 
       numeroSolicitacao: getColumnValue(item, [
         'Solicitação',
@@ -1662,6 +1676,7 @@ function updateDemandasTable() {
       <th>Origem</th>
       <th>Solicitação</th>
       <th>Data Solicitação</th>
+      <th>Data Solicitação</th>
       <th>Nº Prontuário</th>
       <th>Prestador</th>
       <th>Unidade Solicitante</th>
@@ -1693,6 +1708,7 @@ function updateDemandasTable() {
 
     [
       'origem',
+      'numeroSolicitacao',
       'numeroSolicitacao',
       'dataSolicitacao',
       'prontuario',
