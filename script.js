@@ -140,12 +140,12 @@ let chartPendenciasPorMes = null;
 let chartEvolucaoTemporal = null;
 
 // ===================================
-// ✅ MUDANÇA 1: Variável para controlar registros por página (padrão 50)
+// TABELA: paginação e filtros
 // ===================================
 let TABLE_PAGE_SIZE = 50;
 let tableCurrentPage = 1;
 let tableSearchQuery = '';
-let tableColumnFilters = {};
+let tableColumnFilters = {}; // (mantido, se usar depois)
 
 // ===================================
 // FUNÇÃO AUXILIAR PARA VERIFICAR SE USUÁRIO ESTÁ PREENCHIDO
@@ -160,14 +160,11 @@ function hasUsuarioPreenchido(item) {
 // ===================================
 function getColumnValue(item, possibleNames, defaultValue = '-') {
   for (let name of possibleNames) {
-    // Busca exata
     if (item.hasOwnProperty(name) && item[name]) return item[name];
 
-    // Busca com trim (remove espaços)
     const trimmedName = name.trim();
     if (item.hasOwnProperty(trimmedName) && item[trimmedName]) return item[trimmedName];
 
-    // Busca case-insensitive
     const keys = Object.keys(item);
     const foundKey = keys.find(k => k.toLowerCase().trim() === name.toLowerCase().trim());
     if (foundKey && item[foundKey]) return item[foundKey];
@@ -182,7 +179,6 @@ function toggleMultiSelect(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
-// fecha dropdown ao clicar fora
 document.addEventListener('click', (e) => {
   document.querySelectorAll('.multi-select').forEach(ms => {
     if (!ms.contains(e.target)) ms.classList.remove('open');
@@ -1422,8 +1418,10 @@ function createPieChart(canvasId, labels, data) {
 function parseDate(dateStr) {
   if (!dateStr || dateStr === '-') return null;
 
-  // dd/mm/yyyy
-  let match = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  const s = String(dateStr).trim();
+
+  // dd/mm/yyyy (opcionalmente com hora: dd/mm/yyyy hh:mm[:ss])
+  let match = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?/);
   if (match) {
     const day = parseInt(match[1], 10);
     const month = parseInt(match[2], 10) - 1;
@@ -1431,8 +1429,8 @@ function parseDate(dateStr) {
     return new Date(year, month, day);
   }
 
-  // yyyy-mm-dd
-  match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  // yyyy-mm-dd (opcionalmente com hora)
+  match = s.match(/(\d{4})-(\d{2})-(\d{2})(?:[T\s]\d{2}:\d{2}(?::\d{2})?)?/);
   if (match) {
     const year = parseInt(match[1], 10);
     const month = parseInt(match[2], 10) - 1;
@@ -1449,7 +1447,7 @@ function parseDate(dateStr) {
 function formatDate(dateStr) {
   const d = parseDate(dateStr);
   if (!d || isNaN(d.getTime())) return dateStr;
-  
+
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
@@ -1464,7 +1462,7 @@ function refreshData() {
 }
 
 // ===================================
-// ✅ MUDANÇA 4 e 5: DOWNLOAD EXCEL (SEM TELEFONE E USUÁRIO, COM Nº SOLICITAÇÃO)
+// DOWNLOAD EXCEL
 // ===================================
 function downloadExcel() {
   const dataToExport = filteredData
@@ -1472,8 +1470,21 @@ function downloadExcel() {
     .map(item => ({
       'Distrito': item['_distrito'] || '',
       'Tipo': item['_tipo'] || '',
-      'Nº Solicitação': getColumnValue(item, ['Nº Solicitação', 'Numero Solicitação', 'N Solicitação'], ''),
-      'Data Solicitação': formatDate(getColumnValue(item, ['Data Solicitação', 'Data Solicitacao'], '')),
+
+      'Nº Solicitação': getColumnValue(item, [
+        'Solicitação',
+        'SOLICITAÇÃO',
+        'Nº Solicitação',
+        'Numero Solicitação'
+      ], ''),
+
+      'Data Solicitação': formatDate(getColumnValue(item, [
+        'Data da Solicitação',
+        'DATA DA SOLICITAÇÃO',
+        'Data Solicitação',
+        'Data Solicitacao'
+      ], '')),
+
       'Nº Prontuário': getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], ''),
       'Prestador': item['Prestador'] || '',
       'Unidade Solicitante': item['Unidade Solicitante'] || '',
@@ -1491,7 +1502,7 @@ function downloadExcel() {
 }
 
 // ===================================
-// ✅ MUDANÇA 1: FUNÇÃO PARA ALTERAR REGISTROS POR PÁGINA
+// ALTERAR REGISTROS POR PÁGINA
 // ===================================
 function changeRecordsPerPage() {
   const select = document.getElementById('recordsPerPage');
@@ -1541,9 +1552,7 @@ function paginate(rows) {
 }
 
 // ===================================
-// ✅ MUDANÇA 2 e 3: ATUALIZAR TABELA DE DEMANDAS
-// MUDANÇA 3: Remover coluna Telefone
-// MUDANÇA 2: Destaque amarelo para pendências a vencer com 15 dias
+// TABELA: ATUALIZAR
 // ===================================
 function updateDemandasTable() {
   const baseItems = filteredData.filter(item => hasUsuarioPreenchido(item));
@@ -1559,8 +1568,23 @@ function updateDemandasTable() {
     return {
       _item: item,
       _dataInicio: parseDate(dataInicioPendencia),
+
       origem: item['_origem'] || '-',
-      dataSolicitacao: formatDate(getColumnValue(item, ['Data Solicitação', 'Data Solicitacao'], '-')),
+
+      numeroSolicitacao: getColumnValue(item, [
+        'Solicitação',
+        'SOLICITAÇÃO',
+        'Nº Solicitação',
+        'Numero Solicitação'
+      ], '-'),
+
+      dataSolicitacao: formatDate(getColumnValue(item, [
+        'Data da Solicitação',
+        'DATA DA SOLICITAÇÃO',
+        'Data Solicitação',
+        'Data Solicitacao'
+      ], '-')),
+
       prontuario: getColumnValue(item, ['Nº Prontuário', 'Numero Prontuário'], '-'),
       unidadeSolicitante: getColumnValue(item, ['Unidade Solicitante'], '-'),
       cboEspecialidade: getColumnValue(item, ['Cbo Especialidade', 'CBO Especialidade'], '-'),
@@ -1569,10 +1593,9 @@ function updateDemandasTable() {
     };
   });
 
-  // Aplicar busca
   if (tableSearchQuery) {
     rows = rows.filter(r => {
-      return Object.values(r).some(val => 
+      return Object.values(r).some(val =>
         String(val).toLowerCase().includes(tableSearchQuery)
       );
     });
@@ -1584,6 +1607,7 @@ function updateDemandasTable() {
   thead.innerHTML = `
     <tr>
       <th>Origem</th>
+      <th>Solicitação</th>
       <th>Data Solicitação</th>
       <th>Nº Prontuário</th>
       <th>Unidade Solicitante</th>
@@ -1601,15 +1625,24 @@ function updateDemandasTable() {
   pageRows.forEach(r => {
     const tr = document.createElement('tr');
 
-    // ✅ MUDANÇA 2: Destaque amarelo para pendências a vencer com 15 dias (ABA PENDÊNCIAS)
     if (r._item['_tipo'] === 'PENDENTE' && r._dataInicio) {
       const diasDecorridos = Math.floor((hoje - r._dataInicio) / (1000 * 60 * 60 * 24));
       if (diasDecorridos >= 15) {
-        tr.style.backgroundColor = '#fef08a'; // Amarelo claro
+        tr.style.backgroundColor = '#fefce8';
+        tr.style.boxShadow = 'inset 4px 0 0 #fde68a'; // opcional: faixa lateral suave
       }
     }
 
-    ['origem', 'dataSolicitacao', 'prontuario', 'unidadeSolicitante', 'cboEspecialidade', 'dataInicioPendencia', 'status'].forEach(key => {
+    [
+      'origem',
+      'numeroSolicitacao',
+      'dataSolicitacao',
+      'prontuario',
+      'unidadeSolicitante',
+      'cboEspecialidade',
+      'dataInicioPendencia',
+      'status'
+    ].forEach(key => {
       const td = document.createElement('td');
       td.textContent = r[key] ?? '-';
       tr.appendChild(td);
