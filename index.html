@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <!-- Cards de Métricas (visual igual ao anexo) -->
+        <!-- Cards de Métricas -->
         <div class="cards-grid cards-grid-top">
             <div class="top-card top-card-blue">
                 <div class="top-card-label">TOTAL DE PENDÊNCIAS - REGISTROS GERAL</div>
@@ -50,17 +50,27 @@
                 <div class="top-card-value" id="totalPendencias">0</div>
             </div>
 
+            <div class="top-card top-card-purple">
+                <div class="top-card-label">REGISTROS DE PENDÊNCIAS<br>RESOLVIDAS</div>
+                <div class="top-card-value" id="pendenciasResolvidas">0</div>
+            </div>
+
             <div class="top-card top-card-orange">
-                <div class="top-card-label">VENCENDO COM 15 DIAS (CONTANDO A PARTIR DA DATA DO INÍCIO DA PENDÊNCIA)</div>
-                <div class="top-card-value" id="pendencias15">0</div>
+                <div class="top-card-label">REGISTROS DE PENDÊNCIAS<br>AGENDADAS</div>
+                <div class="top-card-value" id="pendenciasAgendadas">0</div>
             </div>
 
             <div class="top-card top-card-red">
-                <div class="top-card-label">VENCENDO COM 30 DIAS (CONTANDO A PARTIR DA DATA DO INÍCIO DA PENDÊNCIA)</div>
-                <div class="top-card-value" id="pendencias30">0</div>
+                <div class="top-card-label">REGISTROS DE PENDÊNCIAS CANCELADAS POR VENCIMENTO DO PRAZO</div>
+                <div class="top-card-value" id="pendenciasCanceladasVencimento">0</div>
             </div>
 
-            <div class="top-card top-card-purple">
+            <div class="top-card top-card-gray">
+                <div class="top-card-label">REGISTROS DE PENDÊNCIAS<br>CANCELADAS/GERAL</div>
+                <div class="top-card-value" id="pendenciasCanceladasGeral">0</div>
+            </div>
+
+            <div class="top-card top-card-cyan">
                 <div class="top-card-label">PORCENTAGEM<br>FILTRADA</div>
                 <div class="top-card-value" id="percentFiltrados">100.0%</div>
             </div>
@@ -228,7 +238,7 @@
                 <input type="text" id="searchInput" placeholder="Pesquisar na tabela..." onkeyup="searchTable()">
             </div>
 
-            <!-- ✅ SELETOR DE ITENS POR PÁGINA -->
+            <!-- SELETOR DE ITENS POR PÁGINA -->
             <div class="pagination-controls">
                 <label for="itemsPerPage">Mostrar:</label>
                 <select id="itemsPerPage" onchange="changeItemsPerPage()">
@@ -241,7 +251,7 @@
                 <span>registros por página</span>
             </div>
 
-            <!-- ✅ PAGINAÇÃO estilo do anexo -->
+            <!-- PAGINAÇÃO estilo do anexo -->
             <div class="pager" id="pager">
                 <button class="pager-btn" id="btnPrev" onclick="goPrev()">Anterior</button>
                 <div class="pager-info" id="pagerInfo">Página 1 de 1</div>
