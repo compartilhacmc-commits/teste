@@ -151,7 +151,7 @@
 
         <!-- Gráficos -->
         <div class="charts-container">
-            <!-- LINHA 1 (ORDEM ALTERADA) -->
+            <!-- LINHA 1 -->
             <div class="chart-box">
                 <h3 class="chart-title">Pendências Não Resolvidas por Unidade de Saúde</h3>
                 <div class="chart-wrapper">
@@ -160,15 +160,15 @@
             </div>
 
             <div class="chart-box">
-                <h3 class="chart-title">Registros Geral de Pendências por Unidade de Saúde</h3>
+                <h3 class="chart-title">Registros de Pendências Resolvidas por Unidade</h3>
                 <div class="chart-wrapper">
                     <canvas id="chartUnidades"></canvas>
                 </div>
             </div>
 
-            <!-- LINHA 2 (NOVO GRÁFICO AO LADO) -->
+            <!-- LINHA 2 -->
             <div class="chart-box">
-                <h3 class="chart-title">Registros Geral de Pendências por Especialidade</h3>
+                <h3 class="chart-title">Registros de Pendências Resolvidas por Especialidade</h3>
                 <div class="chart-wrapper">
                     <canvas id="chartEspecialidades"></canvas>
                 </div>
@@ -196,7 +196,7 @@
                 </div>
             </div>
 
-            <!-- LINHA 4 -->
+            <!-- LINHA 4 - REORGANIZADA -->
             <div class="chart-box">
                 <h3 class="chart-title">Quantidade de Pendências por Mês</h3>
                 <div class="chart-wrapper">
@@ -204,25 +204,19 @@
                 </div>
             </div>
 
-            <div class="chart-box chart-box-full">
-                <h3 class="chart-title">Distribuição por Status</h3>
-
-                <div class="charts-row-2">
-                    <div class="chart-half">
-                        <h4 class="chart-subtitle">Distribuição Percentual por Status</h4>
-                        <div class="chart-wrapper chart-wrapper-pizza">
-                            <canvas id="chartPizzaStatus"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-half">
-                        <h4 class="chart-subtitle">Evolução Temporal de Pendências</h4>
-                        <div class="chart-wrapper chart-wrapper-pizza">
-                            <canvas id="chartEvolucaoTemporal"></canvas>
-                        </div>
-                    </div>
+            <div class="chart-box">
+                <h3 class="chart-title">Distribuição Percentual por Status</h3>
+                <div class="chart-wrapper chart-wrapper-pizza">
+                    <canvas id="chartPizzaStatus"></canvas>
                 </div>
+            </div>
 
+            <!-- LINHA 5 - EVOLUÇÃO TEMPORAL FULL WIDTH -->
+            <div class="chart-box chart-box-full">
+                <h3 class="chart-title">Evolução Temporal de Pendências</h3>
+                <div class="chart-wrapper chart-wrapper-evolucao">
+                    <canvas id="chartEvolucaoTemporal"></canvas>
+                </div>
             </div>
         </div>
 
