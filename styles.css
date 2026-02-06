@@ -17,6 +17,8 @@
     --amarelo: #f59e0b;
     --vermelho: #ef4444;
     --roxo: #8b5cf6;
+    --cinza: #6b7280;
+    --ciano: #06b6d4;
 
     --branco: #ffffff;
     --cinza-100: #f3f4f6;
@@ -185,8 +187,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center; /* CENTRALIZA HORIZONTALMENTE */
-    text-align: center; /* CENTRALIZA O TEXTO */
+    align-items: center;
+    text-align: center;
 }
 
 .top-card::before{
@@ -209,7 +211,7 @@ body {
     opacity: 0.80;
     line-height: 1.25;
     margin-bottom: 0.55rem;
-    text-align: center; /* GARANTE CENTRALIZAÇÃO DO LABEL */
+    text-align: center;
 }
 
 .top-card-value{
@@ -217,7 +219,7 @@ body {
     font-weight: 900;
     color: #111827;
     line-height: 1;
-    text-align: center; /* CENTRALIZA O VALOR */
+    text-align: center;
 }
 
 .top-card-blue::before{ background: #2563eb; }
@@ -225,6 +227,8 @@ body {
 .top-card-orange::before{ background: #f59e0b; }
 .top-card-red::before{ background: #ef4444; }
 .top-card-purple::before{ background: #8b5cf6; }
+.top-card-gray::before{ background: #6b7280; }
+.top-card-cyan::before{ background: #06b6d4; }
 
 /* ===================================
    SEÇÃO DE FILTROS
@@ -793,4 +797,3 @@ html { scroll-behavior: smooth; }
 
 .ms-item input{ width: 16px; height: 16px; }
 .ms-item span{ font-size: 0.95rem; color: var(--cinza-800); }
-
