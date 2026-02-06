@@ -535,38 +535,44 @@ function updateCharts() {
   createHorizontalBarChart('chartPendenciasNaoResolvidasUnidade', pendenciasNRLabels, pendenciasNRValues, '#dc2626');
 
   // -----------------------------------
-  // Registros Geral por Unidade (mantém sua lógica atual: usuário preenchido)
+  // MUDANÇA 1: Registros de Pendências Resolvidas por Unidade
+  // (aba Resolvidos + usuário preenchido)
   // -----------------------------------
-  const unidadesCount = {};
+  const unidadesResolvidasCount = {};
   filteredData.forEach(item => {
+    if (!isOrigemResolvidos(item)) return;
     if (!isPendenciaByUsuario(item)) return;
+    
     const unidade = item['Unidade Solicitante'] || 'Não informado';
-    unidadesCount[unidade] = (unidadesCount[unidade] || 0) + 1;
+    unidadesResolvidasCount[unidade] = (unidadesResolvidasCount[unidade] || 0) + 1;
   });
 
-  const unidadesLabels = Object.keys(unidadesCount)
-    .sort((a, b) => unidadesCount[b] - unidadesCount[a])
+  const unidadesResolvidasLabels = Object.keys(unidadesResolvidasCount)
+    .sort((a, b) => unidadesResolvidasCount[b] - unidadesResolvidasCount[a])
     .slice(0, 50);
-  const unidadesValues = unidadesLabels.map(label => unidadesCount[label]);
+  const unidadesResolvidasValues = unidadesResolvidasLabels.map(label => unidadesResolvidasCount[label]);
 
-  createHorizontalBarChart('chartUnidades', unidadesLabels, unidadesValues, '#48bb78');
+  createHorizontalBarChart('chartUnidades', unidadesResolvidasLabels, unidadesResolvidasValues, '#48bb78');
 
   // -----------------------------------
-  // Registros Geral por Especialidade (mantém sua lógica atual: usuário preenchido)
+  // MUDANÇA 2: Registros de Pendências Resolvidas por Especialidade
+  // (aba Resolvidos + usuário preenchido)
   // -----------------------------------
-  const especialidadesCount = {};
+  const especialidadesResolvidasCount = {};
   filteredData.forEach(item => {
+    if (!isOrigemResolvidos(item)) return;
     if (!isPendenciaByUsuario(item)) return;
+    
     const especialidade = item['Cbo Especialidade'] || 'Não informado';
-    especialidadesCount[especialidade] = (especialidadesCount[especialidade] || 0) + 1;
+    especialidadesResolvidasCount[especialidade] = (especialidadesResolvidasCount[especialidade] || 0) + 1;
   });
 
-  const especialidadesLabels = Object.keys(especialidadesCount)
-    .sort((a, b) => especialidadesCount[b] - especialidadesCount[a])
+  const especialidadesResolvidasLabels = Object.keys(especialidadesResolvidasCount)
+    .sort((a, b) => especialidadesResolvidasCount[b] - especialidadesResolvidasCount[a])
     .slice(0, 50);
-  const especialidadesValues = especialidadesLabels.map(label => especialidadesCount[label]);
+  const especialidadesResolvidasValues = especialidadesResolvidasLabels.map(label => especialidadesResolvidasCount[label]);
 
-  createHorizontalBarChart('chartEspecialidades', especialidadesLabels, especialidadesValues, '#065f46');
+  createHorizontalBarChart('chartEspecialidades', especialidadesResolvidasLabels, especialidadesResolvidasValues, '#065f46');
 
   // -----------------------------------
   // Pendências Não Resolvidas por Especialidade
@@ -601,7 +607,15 @@ function updateCharts() {
   const statusValues = statusLabels.map(label => statusCount[label]);
 
   createVerticalBarChart('chartStatus', statusLabels, statusValues, '#f97316');
+  
+  // -----------------------------------
+  // Pizza (agora ao lado do Mês)
+  // -----------------------------------
   createPieChart('chartPizzaStatus', statusLabels, statusValues);
+  
+  // -----------------------------------
+  // Evolução Temporal (agora embaixo, full width)
+  // -----------------------------------
   createEvolucaoTemporalChart('chartEvolucaoTemporal');
 
   // -----------------------------------
