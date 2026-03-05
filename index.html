@@ -71,6 +71,7 @@
       </div>
       <div class="filters-grid">
 
+        <!-- FILTRO 1: Total de agendamentos no mês -->
         <div class="filter-group">
           <label><i class="fas fa-calendar-alt"></i> Total de agendamentos no mês</label>
           <select id="filterMes" class="filter-select" onchange="applyFilters()">
@@ -78,6 +79,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 2: Data da Criação do Agendamento -->
         <div class="filter-group">
           <label><i class="fas fa-calendar-day"></i> Data da Criação do Agendamento</label>
           <div class="date-wrapper">
@@ -86,6 +88,7 @@
           </div>
         </div>
 
+        <!-- FILTRO 3: Prestador -->
         <div class="filter-group">
           <label><i class="fas fa-building"></i> Prestador</label>
           <select id="filterPrestador" class="filter-select" onchange="applyFilters()">
@@ -93,6 +96,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 4: Especialidade -->
         <div class="filter-group">
           <label><i class="fas fa-stethoscope"></i> Especialidade</label>
           <select id="filterEspecialidade" class="filter-select" onchange="applyFilters()">
@@ -100,6 +104,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 5: Tipo de Serviço -->
         <div class="filter-group">
           <label><i class="fas fa-notes-medical"></i> Tipo de Serviço</label>
           <select id="filterTipoServico" class="filter-select" onchange="applyFilters()">
@@ -109,6 +114,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 6: Profissional Médico -->
         <div class="filter-group">
           <label><i class="fas fa-user-md"></i> Profissional Médico</label>
           <select id="filterProfissional" class="filter-select" onchange="applyFilters()">
@@ -116,6 +122,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 7: Unidade de Saúde -->
         <div class="filter-group">
           <label><i class="fas fa-clinic-medical"></i> Unidade de Saúde</label>
           <select id="filterUnidade" class="filter-select" onchange="applyFilters()">
@@ -123,6 +130,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 8: Distrito -->
         <div class="filter-group">
           <label><i class="fas fa-map-marker-alt"></i> Distrito</label>
           <select id="filterDistrito" class="filter-select" onchange="applyFilters()">
@@ -130,6 +138,7 @@
           </select>
         </div>
 
+        <!-- FILTRO 9: Situação -->
         <div class="filter-group">
           <label><i class="fas fa-flag"></i> Situação</label>
           <select id="filterSituacao" class="filter-select" onchange="applyFilters()">
@@ -185,7 +194,7 @@
       </div>
     </section>
 
-    <!-- ===== GRÁFICOS LINHA 1 ===== -->
+    <!-- ===== GRÁFICOS LINHA 1 – Distrito (wide) + 1ª Consulta vs Retorno ===== -->
     <section class="charts-row charts-row-main">
       <div class="chart-card">
         <div class="chart-header">
@@ -214,7 +223,7 @@
       </div>
     </section>
 
-    <!-- ===== GRÁFICOS LINHA 2 ===== -->
+    <!-- ===== GRÁFICOS LINHA 2 – Especialidade + Prestador ===== -->
     <section class="charts-row charts-row-equal">
       <div class="chart-card">
         <div class="chart-header">
@@ -246,7 +255,7 @@
     <!-- ===== GRÁFICOS LINHA 3 – Consolidado por Situação + Rosca (Mês) ===== -->
     <section class="charts-row charts-row-equal">
 
-      <!-- ✅ ALTERADO: adicionado chart-body-small para reduzir o tamanho -->
+      <!-- Consolidado por Situação (altura normal) -->
       <div class="chart-card">
         <div class="chart-header">
           <div class="chart-title-group">
@@ -255,12 +264,13 @@
           </div>
           <span class="chart-badge">Barras Verticais</span>
         </div>
+        <!-- Mudança 1: Adicionada classe chart-body-small -->
         <div class="chart-body chart-body-small">
           <canvas id="chartConsolidadoSituacao"></canvas>
         </div>
       </div>
 
-      <!-- ✅ ALTERADO: adicionado chart-body-small para reduzir o tamanho -->
+      <!-- Rosca por mês (TAMANHO MAIOR) -->
       <div class="chart-card">
         <div class="chart-header">
           <div class="chart-title-group">
@@ -269,6 +279,7 @@
           </div>
           <span class="chart-badge">Rosca</span>
         </div>
+        <!-- Mudança 2: Adicionada classe chart-body-small mantendo chart-body-doughnut -->
         <div class="chart-body chart-body-doughnut chart-body-small">
           <canvas id="chartMes"></canvas>
         </div>
@@ -276,7 +287,7 @@
 
     </section>
 
-    <!-- ===== GRÁFICOS LINHA 4 ===== -->
+    <!-- ===== GRÁFICOS LINHA 4 – % Absenteísmo por Especialidade + Distrito ===== -->
     <section class="charts-row charts-row-equal">
       <div class="chart-card">
         <div class="chart-header">
@@ -305,7 +316,7 @@
       </div>
     </section>
 
-    <!-- ===== GRÁFICOS LINHA 5 ===== -->
+    <!-- ===== GRÁFICOS LINHA 5 – % Cancelamentos por Distrito + Especialidade ===== -->
     <section class="charts-row charts-row-equal">
       <div class="chart-card">
         <div class="chart-header">
@@ -334,7 +345,7 @@
       </div>
     </section>
 
-    <!-- ===== TABELA ===== -->
+    <!-- ===== TABELA CONSOLIDADO/AGENDAMENTOS ===== -->
     <section class="table-section card">
       <div class="table-header">
         <div class="table-title-group">
