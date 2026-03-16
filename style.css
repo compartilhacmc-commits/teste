@@ -1,8 +1,3 @@
-/* ============================================================
-   DIRETORIA DE REGULAÇÃO DO ACESSO – DASHBOARD
-   style.css – v4.0 (gráficos Consolidado Situação e Absenteísmo Distrito removidos)
-   ============================================================ */
-
 :root {
   --primary:        #1e3a5f;
   --primary-dark:   #142844;
@@ -541,6 +536,7 @@ body {
   .header-actions { gap: 8px; }
   .btn { padding: 8px 14px; font-size: 0.8rem; }
   .chart-body-tall { min-height: 300px; }
+  /* CORRIGIDO: era 300px — alinhado com chart-body padrão */
   .chart-body-doughnut { min-height: 260px; }
 }
 
@@ -569,6 +565,7 @@ body {
 .main-content > *:nth-child(6) { animation-delay: 0.24s; }
 .main-content > *:nth-child(7) { animation-delay: 0.27s; }
 .main-content > *:nth-child(8) { animation-delay: 0.30s; }
+.main-content > *:nth-child(9) { animation-delay: 0.33s; }
 
 /* Tooltip chart override */
 .chartjs-tooltip { border-radius: 10px !important; font-family: 'Inter', sans-serif !important; }
