@@ -196,7 +196,6 @@ let chartDistrito            = null;
 let chartTipoAtendimento     = null;
 let chartEspecialidade       = null;
 let chartPrestador           = null;
-let chartMes                 = null;
 
 let chartAbsenteismoEsp      = null;
 
@@ -548,7 +547,6 @@ function renderAllCharts() {
   renderChartTipoAtendimento();
   renderChartEspecialidade();
   renderChartPrestador();
-  renderChartMes();
 
   renderChartAbsenteismoEsp();
 
@@ -820,115 +818,7 @@ function renderChartPrestador() {
 
 // ============================================================
 // GRÁFICO 5: Distribuição por Mês – ROSCA (TAMANHO MAIOR, LEGENDAS DENTRO)
-// ============================================================
-function renderChartMes() {
-  const ctx = document.getElementById('chartMes')?.getContext('2d');
-  if (!ctx) return;
 
-  const mesesMap = {};
-  filteredData.forEach(r => {
-    if (!r.dataAgendaParsed || !r.mesAgendamento) return;
-    const d   = r.dataAgendaParsed;
-    const key = d.getFullYear() * 100 + d.getMonth();
-    if (!mesesMap[key]) mesesMap[key] = { label: r.mesAgendamento, count: 0 };
-    mesesMap[key].count++;
-  });
-
-  const sorted = Object.entries(mesesMap).sort((a,b) => +a[0] - +b[0]);
-  const labels = sorted.map(e => e[1].label);
-  const data   = sorted.map(e => e[1].count);
-  const total  = data.reduce((a,b) => a+b, 0);
-  const colors = PALETTE_MONTHS;
-
-  destroyChart(chartMes);
-  chartMes = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: colors,
-        borderColor: '#ffffff',
-        borderWidth: 4,
-        hoverOffset: 15,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '60%',
-      plugins: {
-        legend: {
-          display: true,
-          position: 'right',
-          labels: {
-            font: { family: 'Inter', size: 12, weight: '600' },
-            color: '#1e3a5f',
-            padding: 15,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            pointStyleWidth: 12,
-            generateLabels(chart) {
-              const ds = chart.data.datasets[0];
-              return chart.data.labels.map((label, i) => {
-                const value = ds.data[i];
-                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                return {
-                  text: `${label.split('/')[0]}: ${percentage}% (${fmt(value)})`,
-                  fillStyle: ds.backgroundColor[i],
-                  strokeStyle: ds.backgroundColor[i],
-                  pointStyle: 'circle',
-                  hidden: false,
-                  index: i,
-                  datasetIndex: 0,
-                };
-              });
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(20,40,68,0.95)',
-          titleFont: { family: 'Inter', size: 13, weight: '700' },
-          bodyFont: { family: 'Inter', size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: (ctx) => {
-              const percentage = total > 0 ? ((ctx.raw / total) * 100).toFixed(1) : 0;
-              return ` ${ctx.label}: ${fmt(ctx.raw)} (${percentage}%)`;
-            }
-          }
-        },
-        datalabels: {
-          display: true,
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          borderRadius: 12,
-          padding: { top: 4, bottom: 4, left: 8, right: 8 },
-          color: '#1e3a5f',
-          font: { family: 'Inter', size: 11, weight: '700' },
-          formatter: (value, context) => {
-            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-            if (percentage >= 5) {
-              return `${percentage}%`;
-            }
-            return null;
-          },
-          anchor: 'center',
-          align: 'center',
-          offset: 0
-        },
-        centerText: {
-          enabled: true,
-          value: fmt(total),
-          label: 'Total',
-          valueColor: '#1e3a5f',
-          labelColor: '#7a8fa6',
-          fontSize: 24
-        }
-      }
-    }
-  });
-}
 
 // ============================================================
 // GRÁFICO 6: Consolidado por Situação – Barras Verticais
