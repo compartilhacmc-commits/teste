@@ -1,8 +1,3 @@
-/* ============================================================
-   DIRETORIA DE REGULAÇÃO DO ACESSO – DASHBOARD
-   script.js – v3.8 (rosca maior com legendas dentro, consolidado normal)
-   ============================================================ */
-
 'use strict';
 
 Chart.register(ChartDataLabels);
@@ -202,7 +197,9 @@ let chartTipoAtendimento     = null;
 let chartEspecialidade       = null;
 let chartPrestador           = null;
 let chartMes                 = null;
+
 let chartAbsenteismoEsp      = null;
+
 let chartCancelamentosDist   = null;
 let chartCancelamentosEsp    = null;
 
@@ -470,6 +467,7 @@ function applyFilters() {
   const situacao     = document.getElementById('filterSituacao')?.value     || '';
   const dataCriacaoSelecionada = window._fpInicio ? window._fpInicio.selectedDates[0] : null;
 
+  // Converter situação em array se tiver múltiplos valores separados por vírgula
   const situacoesPermitidas = situacao ? situacao.split(',') : [];
 
   filteredData = allData.filter(r => {
@@ -480,7 +478,10 @@ function applyFilters() {
     if (mes          && r.mesAgendamento     !== mes)           return false;
     if (unidade      && r.unidadeSolicitante !== unidade)       return false;
     if (distrito     && r.distrito           !== distrito)      return false;
+    
+    // Filtro de situação com suporte a múltiplos valores
     if (situacoesPermitidas.length > 0 && !situacoesPermitidas.includes(r.situacao)) return false;
+    
     if (dataCriacaoSelecionada) {
       if (!r.dataCriacaoParsed) return false;
       if (!isSameDay(r.dataCriacaoParsed, dataCriacaoSelecionada)) return false;
@@ -506,13 +507,15 @@ function clearFilters() {
 }
 
 // ============================================================
-// KPIS
+// KPIS (cards respeitam os filtros atuais)
 // ============================================================
 function updateKPIs() {
   const rec = filteredData.filter(r => r.situacao === 'REC').length;
   const fal = filteredData.filter(r => r.situacao === 'FAL').length;
   const can = filteredData.filter(r => r.situacao === 'CAN').length;
   const tra = filteredData.filter(r => r.situacao === 'TRA').length;
+  
+  // Agendados = REC + FAL (dos dados filtrados atualmente)
   const agendados = rec + fal;
 
   animateCount('kpiAgendados', agendados);
@@ -546,7 +549,9 @@ function renderAllCharts() {
   renderChartEspecialidade();
   renderChartPrestador();
   renderChartMes();
+
   renderChartAbsenteismoEsp();
+
   renderChartCancelamentosDist();
   renderChartCancelamentosEsp();
 }
@@ -814,7 +819,7 @@ function renderChartPrestador() {
 }
 
 // ============================================================
-// GRÁFICO 5: Distribuição por Mês – ROSCA
+// GRÁFICO 5: Distribuição por Mês – ROSCA (TAMANHO MAIOR, LEGENDAS DENTRO)
 // ============================================================
 function renderChartMes() {
   const ctx = document.getElementById('chartMes')?.getContext('2d');
@@ -926,7 +931,11 @@ function renderChartMes() {
 }
 
 // ============================================================
-// GRÁFICO 6: % Absenteísmo por Especialidade
+// GRÁFICO 6: Consolidado por Situação – Barras Verticais
+
+
+// ============================================================
+// GRÁFICO 7: % Absenteísmo por Especialidade
 // ============================================================
 function renderChartAbsenteismoEsp() {
   const ctx = document.getElementById('chartAbsenteismoEsp')?.getContext('2d');
@@ -936,6 +945,7 @@ function renderChartAbsenteismoEsp() {
   filteredData.forEach(r => {
     const key = r.cbo || '–';
     if (!map[key]) map[key] = { fal: 0, rec: 0, can: 0 };
+    
     if (r.situacao === 'FAL') map[key].fal++;
     else if (r.situacao === 'REC') map[key].rec++;
     else if (r.situacao === 'CAN') map[key].can++;
@@ -1020,7 +1030,11 @@ function renderChartAbsenteismoEsp() {
 }
 
 // ============================================================
-// GRÁFICO 7: % Cancelamentos por Distrito
+// GRÁFICO 8: % Absenteísmo por Distrito
+
+
+// ============================================================
+// GRÁFICO 9: % Cancelamentos por Distrito
 // ============================================================
 function renderChartCancelamentosDist() {
   const ctx = document.getElementById('chartCancelamentosDist')?.getContext('2d');
@@ -1102,7 +1116,7 @@ function renderChartCancelamentosDist() {
 }
 
 // ============================================================
-// GRÁFICO 8: % Cancelamentos por Especialidade (Barras Horizontais)
+// GRÁFICO 10: % Cancelamentos por Especialidade (Barras Horizontais)
 // ============================================================
 function renderChartCancelamentosEsp() {
   const ctx = document.getElementById('chartCancelamentosEsp')?.getContext('2d');
