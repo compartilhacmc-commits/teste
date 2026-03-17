@@ -164,6 +164,13 @@ const PALETTE_MONTHS = [
   '#00bcd4', '#ff5722', '#8bc34a', '#673ab7'
 ];
 
+// ============================================================
+// PALETA VERDE – gráfico de Situação (Barras Verdes)
+// ============================================================
+const PALETTE_GREEN = [
+  '#1a7a3f', '#27ae60', '#2ecc71', '#52be80', '#76d7c4'
+];
+
 const SITUACAO_COLORS = {
   AGE: { bg: 'rgba(41,128,185,0.85)',  border: '#2980b9', label: 'Agendados (AGE)' },
   REC: { bg: 'rgba(39,174,96,0.85)',   border: '#27ae60', label: 'Recepcionados' },
@@ -196,7 +203,8 @@ let chartDistrito            = null;
 let chartTipoAtendimento     = null;
 let chartEspecialidade       = null;
 let chartPrestador           = null;
-
+let chartSituacao            = null;
+let chartMeses               = null;
 
 let chartAbsenteismoEsp      = null;
 let chartAbsenteismoDist     = null;
@@ -548,7 +556,8 @@ function renderAllCharts() {
   renderChartTipoAtendimento();
   renderChartEspecialidade();
   renderChartPrestador();
-
+  renderChartSituacao();
+  renderChartMeses();
 
   renderChartAbsenteismoEsp();
   renderChartAbsenteismoDist();
@@ -819,12 +828,163 @@ function renderChartPrestador() {
 }
 
 // ============================================================
-// GRÁFICO 5: Distribuição por Mês – ROSCA (TAMANHO MAIOR, LEGENDAS DENTRO)
+// GRÁFICO 5: Quantidade de Consultas por Situação (BARRAS VERDES)
+// ============================================================
+function renderChartSituacao() {
+  const ctx = document.getElementById('chartSituacao')?.getContext('2d');
+  if (!ctx) return;
 
+  const age = filteredData.filter(r => r.situacao === 'AGE').length;
+  const rec = filteredData.filter(r => r.situacao === 'REC').length;
+  const fal = filteredData.filter(r => r.situacao === 'FAL').length;
+  const can = filteredData.filter(r => r.situacao === 'CAN').length;
+  const tra = filteredData.filter(r => r.situacao === 'TRA').length;
+
+  const labels = ['Agendados (AGE)', 'Recepcionados (REC)', 'Faltosos (FAL)', 'Cancelados (CAN)', 'Transferidos (TRA)'];
+  const data = [age, rec, fal, can, tra];
+  const total = data.reduce((a,b) => a+b, 0);
+
+  destroyChart(chartSituacao);
+  chartSituacao = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Quantidade',
+        data,
+        backgroundColor: [
+          'rgba(26,122,63,0.85)',   // Verde escuro para AGE
+          'rgba(39,174,96,0.85)',   // Verde médio para REC
+          'rgba(46,204,113,0.85)',  // Verde claro para FAL
+          'rgba(82,190,128,0.85)',  // Verde mais claro para CAN
+          'rgba(118,221,196,0.85)'  // Verde teal para TRA
+        ],
+        borderColor: [
+          '#1a7a3f',
+          '#27ae60',
+          '#2ecc71',
+          '#52be80',
+          '#76ddb5'
+        ],
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...TOOLTIP_BASE,
+          callbacks: {
+            label: ctx => ` ${fmt(ctx.raw)} consultas`,
+            afterLabel: ctx => ` ${total > 0 ? (ctx.raw/total*100).toFixed(1) : 0}% do total`
+          }
+        },
+        datalabels: {
+          anchor: 'center', align: 'center',
+          color: '#fff',
+          textStrokeColor: 'rgba(0,0,0,0.30)', textStrokeWidth: 2,
+          font: { family: 'Inter', size: 13, weight: 'bold' },
+          formatter: val => val > 0 ? fmt(val) : ''
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            font: { family: 'Inter', size: 10, weight: '600' },
+            color: '#3d5166', maxRotation: 35
+          },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { font: { family: 'Inter', size: 10 }, color: '#7a8fa6' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
 
 // ============================================================
-// GRÁFICO 6: Consolidado por Situação – Barras Verticais
+// GRÁFICO 6: Distribuição por Mês – ROSCA (MULTICOLOR)
+// ============================================================
+function renderChartMeses() {
+  const ctx = document.getElementById('chartMeses')?.getContext('2d');
+  if (!ctx) return;
 
+  const counts = countBy(filteredData, r => r.mesAgendamento);
+  const entries = sortedEntries(counts);
+  const labels = entries.map(e => e[0]);
+  const data = entries.map(e => e[1]);
+  const total = data.reduce((a,b) => a+b, 0);
+
+  destroyChart(chartMeses);
+  chartMeses = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: labels.map((_,i) => PALETTE_MONTHS[i % PALETTE_MONTHS.length]),
+        borderColor: '#fff',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: { family: 'Inter', size: 11, weight: '600' },
+            color: '#3d5166',
+            padding: 14,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: `${label}: ${fmt(data.datasets[0].data[i])}`,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
+          }
+        },
+        tooltip: {
+          ...TOOLTIP_BASE,
+          callbacks: {
+            label: ctx => {
+              const value = ctx.raw;
+              const pct = total > 0 ? (value/total*100).toFixed(1) : 0;
+              return ` ${fmt(value)} agendamentos (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          color: '#fff',
+          font: { family: 'Inter', size: 11, weight: 'bold' },
+          formatter: (val, ctx) => {
+            const pct = total > 0 ? (val/total*100).toFixed(0) : 0;
+            return pct + '%';
+          }
+        },
+        centerText: {
+          enabled: true,
+          value: fmt(total),
+          label: 'Total',
+          fontSize: 24,
+          valueColor: '#1e3a5f',
+          labelColor: '#7a8fa6'
+        }
+      }
+    }
+  });
+}
 
 // ============================================================
 // GRÁFICO 7: % Absenteísmo por Especialidade
@@ -1482,4 +1642,3 @@ document.addEventListener('DOMContentLoaded', () => {
   initDatePickers();
   loadData();
 });
-
