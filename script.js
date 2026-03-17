@@ -827,7 +827,6 @@ function renderChartPrestador() {
   });
 }
 
-// ============================================================
 // GRÁFICO 5: Quantidade de Consultas por Situação (BARRAS VERDES)
 // ============================================================
 function renderChartSituacao() {
@@ -840,7 +839,7 @@ function renderChartSituacao() {
   const can = filteredData.filter(r => r.situacao === 'CAN').length;
   const tra = filteredData.filter(r => r.situacao === 'TRA').length;
 
-  const labels = ['AGE', 'REC', 'FAL', 'CAN', 'TRA'];
+  const labels = ['Agendados (AGE)', 'Recepcionados (REC)', 'Faltosos (FAL)', 'Cancelados (CAN)', 'Transferidos (TRA)'];
   const data = [age, rec, fal, can, tra];
   const total = data.reduce((a,b) => a+b, 0);
 
@@ -850,19 +849,25 @@ function renderChartSituacao() {
     data: {
       labels,
       datasets: [{
-        label: '',
+        label: 'Quantidade',
         data,
         backgroundColor: [
-          'rgba(13,71,36,0.88)',
-          'rgba(26,122,63,0.88)',
-          'rgba(39,174,96,0.88)',
-          'rgba(52,152,85,0.88)',
-          'rgba(65,130,74,0.88)'
+          'rgba(13,71,36,0.88)',    // Verde escuro muito escuro para AGE
+          'rgba(26,122,63,0.88)',   // Verde escuro para REC
+          'rgba(39,174,96,0.88)',   // Verde escuro médio para FAL
+          'rgba(52,152,85,0.88)',   // Verde escuro claro para CAN
+          'rgba(65,130,74,0.88)'    // Verde escuro teal para TRA
         ],
-        borderWidth: 0,
-        borderRadius: 4,
-        barPercentage: 0.6,
-        categoryPercentage: 0.8
+        borderColor: [
+          '#0d4724',
+          '#1a7a3f',
+          '#27ae60',
+          '#349855',
+          '#41824a'
+        ],
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
       }]
     },
     options: {
@@ -873,30 +878,29 @@ function renderChartSituacao() {
         tooltip: {
           ...TOOLTIP_BASE,
           callbacks: {
-            label: ctx => ` ${fmt(ctx.raw)}`
+            label: ctx => ` ${fmt(ctx.raw)} consultas`,
+            afterLabel: ctx => ` ${total > 0 ? (ctx.raw/total*100).toFixed(1) : 0}% do total`
           }
         },
         datalabels: {
-          anchor: 'end',
-          align: 'top',
-          offset: 2,
-          color: '#3d5166',
-          font: { family: 'Inter', size: 9, weight: '600' },
+          anchor: 'center', align: 'center',
+          color: '#fff',
+          textStrokeColor: 'rgba(0,0,0,0.30)', textStrokeWidth: 2,
+          font: { family: 'Inter', size: 13, weight: 'bold' },
           formatter: val => val > 0 ? fmt(val) : ''
         }
       },
       scales: {
         x: {
           ticks: {
-            font: { family: 'Inter', size: 9 },
-            color: '#3d5166',
-            maxRotation: 0
+            font: { family: 'Inter', size: 10, weight: '600' },
+            color: '#3d5166', maxRotation: 35
           },
           grid: { display: false }
         },
         y: {
           beginAtZero: true,
-          display: false,
+          ticks: { font: { family: 'Inter', size: 10 }, color: '#7a8fa6' },
           grid: { display: false }
         }
       }
@@ -904,7 +908,7 @@ function renderChartSituacao() {
   });
 }
 
-// ============================================================
+============================================================
 // GRÁFICO 6: Distribuição por Mês – ROSCA (MULTICOLOR)
 // ============================================================
 function renderChartMeses() {
@@ -926,16 +930,29 @@ function renderChartMeses() {
         data,
         backgroundColor: labels.map((_,i) => PALETTE_MONTHS[i % PALETTE_MONTHS.length]),
         borderColor: '#fff',
-        borderWidth: 2,
+        borderWidth: 3,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '65%',
       plugins: {
         legend: {
-          display: false
+          position: 'right',
+          labels: {
+            font: { family: 'Inter', size: 11, weight: '600' },
+            color: '#3d5166',
+            padding: 14,
+            generateLabels: (chart) => {
+              const data = chart.data;
+              return data.labels.map((label, i) => ({
+                text: `${label}: ${fmt(data.datasets[0].data[i])}`,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
+          }
         },
         tooltip: {
           ...TOOLTIP_BASE,
@@ -943,18 +960,23 @@ function renderChartMeses() {
             label: ctx => {
               const value = ctx.raw;
               const pct = total > 0 ? (value/total*100).toFixed(1) : 0;
-              return ` ${fmt(value)} (${pct}%)`;
+              return ` ${fmt(value)} agendamentos (${pct}%)`;
             }
           }
         },
         datalabels: {
-          display: false
+          color: '#fff',
+          font: { family: 'Inter', size: 11, weight: 'bold' },
+          formatter: (val, ctx) => {
+            const pct = total > 0 ? (val/total*100).toFixed(0) : 0;
+            return pct + '%';
+          }
         },
         centerText: {
           enabled: true,
           value: fmt(total),
-          label: '',
-          fontSize: 16,
+          label: 'Total',
+          fontSize: 24,
           valueColor: '#1e3a5f',
           labelColor: '#7a8fa6'
         }
