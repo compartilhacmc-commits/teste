@@ -827,6 +827,7 @@ function renderChartPrestador() {
   });
 }
 
+// ============================================================
 // GRÁFICO 5: Quantidade de Consultas por Situação (BARRAS VERDES)
 // ============================================================
 function renderChartSituacao() {
@@ -908,7 +909,7 @@ function renderChartSituacao() {
   });
 }
 
-============================================================
+// ============================================================
 // GRÁFICO 6: Distribuição por Mês – ROSCA (MULTICOLOR)
 // ============================================================
 function renderChartMeses() {
