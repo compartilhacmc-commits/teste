@@ -378,7 +378,6 @@ body {
   flex: 1; position: relative; min-height: 260px;
 }
 
-/* CORRIGIDO: era 380px — reduzido para 260px para ficar proporcional aos demais */
 .chart-body-doughnut {
   flex: 1; position: relative; min-height: 260px;
 }
@@ -536,7 +535,6 @@ body {
   .header-actions { gap: 8px; }
   .btn { padding: 8px 14px; font-size: 0.8rem; }
   .chart-body-tall { min-height: 300px; }
-  /* CORRIGIDO: era 300px — alinhado com chart-body padrão */
   .chart-body-doughnut { min-height: 260px; }
 }
 
