@@ -381,7 +381,7 @@ function normalizeData(rows) {
     const nomeCBO       = get('NOME CBO');
     const especialidade = get('ESPECIALIDADE');
     const cbof          = formatCBO(nomeCBO, especialidade);
-    const profissional  = formatProfissional(get('NOME PROFISSIONAL')); // <-- NOVO: captura o nome do profissional médico
+    const profissional  = formatProfissional(get('NOME PROFISSIONAL'));
     const tipoAtend     = getTipoAtendimento(get('TIPO DE ATENDIMENTO'));
     const situacao      = (get('SITUAÇÃO','SITUACAO') || '').toUpperCase().trim();
     const operCod       = get('OPERADOR AGENDAMENTO');
@@ -407,7 +407,7 @@ function normalizeData(rows) {
       cbo:               cbof,
       especialidade:     especialidade ? titleCase(especialidade.toString()) : '',
       nomeCBO,
-      profissional, // <-- NOVO: campo profissional
+      profissional,
       tipoAtendimento:   tipoAtend,
       situacao,
       situacaoLabel:     getSituacaoLabel(situacao),
@@ -1346,15 +1346,13 @@ function renderChartCancelamentosEsp() {
 function buildTableData() {
   const map = {};
   filteredData.forEach(r => {
-    // Adicionado o campo profissional na chave de agrupamento
-    const key = `${r.distrito}|||${r.unidadeSolicitante}|||${r.tipoAtendimento}|||${r.cbo}|||${r.profissional}|||${r.unidadeExecutante}`;
+    const key = `${r.distrito}|||${r.unidadeSolicitante}|||${r.tipoAtendimento}|||${r.cbo}|||${r.unidadeExecutante}`;
     if (!map[key]) {
       map[key] = {
         distrito:          r.distrito,
         unidadeSolicitante:r.unidadeSolicitante,
         tipoServico:       r.tipoAtendimento,
         cbo:               r.cbo,
-        profissional:      r.profissional, // <-- NOVO: profissional médico
         unidadeExecutante: r.unidadeExecutante,
         age: 0, rec: 0, fal: 0, can: 0, tra: 0,
       };
@@ -1387,7 +1385,6 @@ function filterTable() {
         (r.unidadeSolicitante||'').toLowerCase().includes(q) ||
         (r.tipoServico       ||'').toLowerCase().includes(q) ||
         (r.cbo               ||'').toLowerCase().includes(q) ||
-        (r.profissional      ||'').toLowerCase().includes(q) || // <-- NOVO: busca por profissional
         (r.unidadeExecutante ||'').toLowerCase().includes(q)
       );
   currentPage = 1;
@@ -1398,9 +1395,8 @@ function sortTable(col) {
   if (sortColIdx === col) sortAscFlag = !sortAscFlag;
   else { sortColIdx = col; sortAscFlag = true; }
 
-  // Atualizado para incluir 'profissional' no índice 4
   const keys = [
-    'distrito','unidadeSolicitante','tipoServico','cbo','profissional','unidadeExecutante',
+    'distrito','unidadeSolicitante','tipoServico','cbo','unidadeExecutante',
     'age','rec','fal','can','tra','totalAgendamentos','pctAbsenteismo'
   ];
   const key = keys[col];
@@ -1435,7 +1431,7 @@ function renderTable() {
   if (!tbody) return;
 
   if (slice.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="13" class="empty-msg">Nenhum registro encontrado.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="empty-msg">Nenhum registro encontrado.</td></tr>';
     tfoot.innerHTML = '';
   } else {
     tbody.innerHTML = slice.map(r => `
@@ -1444,7 +1440,6 @@ function renderTable() {
         <td style="font-size:0.78rem;color:#3d5166;">${r.unidadeSolicitante || '–'}</td>
         <td><span style="font-size:0.76rem;font-weight:600;color:${r.tipoServico === 'Primeira Consulta' ? '#1a7a3f' : '#7d3c98'}">${r.tipoServico || '–'}</span></td>
         <td><div style="font-weight:600;color:#1e3a5f;font-size:0.8rem;">${r.cbo || '–'}</div></td>
-        <td style="font-size:0.78rem;color:#3d5166;">${r.profissional || '–'}</td> <!-- NOVA COLUNA -->
         <td style="font-size:0.78rem;color:#3d5166;">${r.unidadeExecutante || '–'}</td>
         <td class="text-center"><span class="badge-num badge-age">${fmt(r.age)}</span></td>
         <td class="text-center"><span class="badge-num badge-rec">${fmt(r.rec)}</span></td>
@@ -1466,7 +1461,7 @@ function renderTable() {
 
     tfoot.innerHTML = `
       <tr>
-        <td colspan="6"><i class="fas fa-calculator" style="margin-right:6px;"></i>TOTAL GERAL (${fmt(tableSearched.length)} linhas)</td>
+        <td colspan="5"><i class="fas fa-calculator" style="margin-right:6px;"></i>TOTAL GERAL (${fmt(tableSearched.length)} linhas)</td>
         <td class="text-center">${fmt(sAge)}</td>
         <td class="text-center">${fmt(sRec)}</td>
         <td class="text-center">${fmt(sFal)}</td>
@@ -1550,7 +1545,6 @@ function exportExcel() {
         'Unidade Solicitante':    r.unidadeSolicitante,
         'Tipo de Serviço':        r.tipoServico,
         'CBO / Especialidade':    r.cbo,
-        'Profissional Médico':    r.profissional,
         'Unidade Executante':     r.unidadeExecutante,
         'AGE':                    r.age,
         'REC (Recepcionados)':    r.rec,
@@ -1648,3 +1642,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initDatePickers();
   loadData();
 });
+
+
