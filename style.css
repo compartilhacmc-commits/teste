@@ -331,6 +331,12 @@ body {
   grid-template-columns: 1fr 1fr;
 }
 
+/* Estilo específico para a linha de gráficos pequenos */
+.charts-row-small {
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
 /* ============================================================
    CHART CARDS
    ============================================================ */
@@ -344,6 +350,12 @@ body {
   display: flex; flex-direction: column;
 }
 .chart-card:hover { box-shadow: var(--shadow-hover); }
+
+/* Estilo específico para os cards de gráficos pequenos, se necessário */
+.chart-card-small {
+  /* Padding ligeiramente menor para economizar espaço */
+  padding: 16px 18px;
+}
 
 .chart-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -384,8 +396,13 @@ body {
 
 .chart-body-tall { min-height: 400px; }
 
+/* Ajustes de altura para os gráficos pequenos */
 .chart-body-small {
-  flex: 1; position: relative; min-height: 180px;
+  flex: 1; position: relative; min-height: 180px; /* Menor altura */
+}
+
+.chart-body-doughnut-small {
+  flex: 1; position: relative; min-height: 220px; /* Altura adequada para o gráfico de rosca */
 }
 
 .chart-body canvas { width: 100% !important; }
@@ -522,7 +539,8 @@ body {
 @media (max-width: 1100px) {
   .charts-row,
   .charts-row-main,
-  .charts-row-equal {
+  .charts-row-equal,
+  .charts-row-small {
     grid-template-columns: 1fr;
   }
 }
