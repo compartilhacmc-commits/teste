@@ -30,6 +30,7 @@
           <div class="h-meta">
            Superintendente: <b style="color:#bfdbfe">Yara Ariane M.S.Souza</b>
             &nbsp;•&nbsp; Diretora: <b style="color:#bfdbfe">Paloma Morais</b>
+          </div>
           <p class="header-ref">Referência do Setor: <strong>Enfermeira Giovanna</strong></p>
           <p class="header-ref">Página criada por <strong>Ana P. A. Silva</strong> – Matric. 201704 | Assistente Adm. Diretoria de Regulação do Acesso</p>
         </div>
@@ -60,7 +61,7 @@
   <!-- ===================== MAIN CONTENT ===================== -->
   <main class="main-content">
 
-    <!-- ===== FILTROS (COM NOVO FILTRO UNIDADE SOLICITANTE) ===== -->
+    <!-- ===== FILTROS ===== -->
     <section class="filters-section card">
       <div class="filters-header">
         <i class="fas fa-filter"></i>
@@ -70,36 +71,31 @@
         </button>
       </div>
       <div class="filters-grid">
-
         <div class="filter-group">
-          <label><i class="fas fa-calendar-alt"></i> Total de agendamentos no mês</label>
+          <label><i class="fas fa-calendar-alt"></i> Mês do Agendamento</label>
           <select id="filterMes" class="filter-select" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
         </div>
-
         <div class="filter-group">
-          <label><i class="fas fa-calendar-day"></i> Data da Criação do Agendamento</label>
+          <label><i class="fas fa-calendar-day"></i> Data da Criação</label>
           <div class="date-wrapper">
             <input type="text" id="filterDataInicio" class="filter-input date-input" placeholder="dd/mm/aaaa" readonly />
             <i class="fas fa-calendar-check date-icon"></i>
           </div>
         </div>
-
         <div class="filter-group">
-          <label><i class="fas fa-building"></i> Prestador (Unidade Executante)</label>
+          <label><i class="fas fa-building"></i> Unidade Executante</label>
           <select id="filterPrestador" class="filter-select" onchange="applyFilters()">
-            <option value="">Todos</option>
+            <option value="">Todas</option>
           </select>
         </div>
-
         <div class="filter-group">
           <label><i class="fas fa-hospital"></i> Unidade Solicitante</label>
           <select id="filterUnidadeSolicitante" class="filter-select" onchange="applyFilters()">
             <option value="">Todas</option>
           </select>
         </div>
-
         <div class="filter-group">
           <label><i class="fas fa-notes-medical"></i> Tipo de Serviço</label>
           <select id="filterTipoServico" class="filter-select" onchange="applyFilters()">
@@ -108,21 +104,18 @@
             <option value="Retorno">Retorno</option>
           </select>
         </div>
-
         <div class="filter-group">
-          <label><i class="fas fa-user-md"></i> Profissional Médico</label>
+          <label><i class="fas fa-user-md"></i> Profissional</label>
           <select id="filterProfissional" class="filter-select" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
         </div>
-
         <div class="filter-group">
           <label><i class="fas fa-stethoscope"></i> Especialidade</label>
           <select id="filterEspecialidade" class="filter-select" onchange="applyFilters()">
             <option value="">Todas</option>
           </select>
         </div>
-
       </div>
     </section>
 
@@ -131,7 +124,7 @@
       <div class="kpi-card kpi-total-geral">
         <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
         <div class="kpi-info">
-          <p class="kpi-label">Total de Geral de Agendamentos (Mês Atual e Próximo Mês)</p>
+          <p class="kpi-label">Total Geral de Agendamentos</p>
           <h3 class="kpi-value" id="kpiTotalGeral">0</h3>
         </div>
       </div>
@@ -157,15 +150,14 @@
         <div class="chart-header">
           <div class="chart-title-group">
             <div class="chart-dot dot-blue"></div>
-            <h4>Agendamentos por Prestador (Unidade Executante)</h4>
+            <h4>Agendamentos por Unidade Executante</h4>
           </div>
-          <span class="chart-badge">Barras Verticais</span>
+          <span class="chart-badge">Barras</span>
         </div>
         <div class="chart-body">
           <canvas id="chartPrestador"></canvas>
         </div>
       </div>
-
       <div class="chart-card chart-small">
         <div class="chart-header">
           <div class="chart-title-group">
@@ -190,30 +182,27 @@
         <div class="table-controls">
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" id="tableSearch" placeholder="Buscar registros..." oninput="filterTable()" />
+            <input type="text" id="tableSearch" placeholder="Buscar..." oninput="filterTable()" />
           </div>
           <select id="tablePageSize" class="filter-select small-select" onchange="renderTable()">
             <option value="15">15 por página</option>
             <option value="25">25 por página</option>
             <option value="50">50 por página</option>
             <option value="100">100 por página</option>
-            <option value="500">500 por página</option>
-            <option value="1000">1.000 por página</option>
           </select>
         </div>
       </div>
-
       <div class="table-responsive">
         <table class="data-table" id="mainTable">
           <thead>
             <tr>
               <th onclick="sortTable(0)">Unidade Executante <i class="fas fa-sort"></i></th>
               <th onclick="sortTable(1)">Unidade Solicitante <i class="fas fa-sort"></i></th>
-              <th onclick="sortTable(2)">CBO / Especialidade <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable(2)">Especialidade <i class="fas fa-sort"></i></th>
               <th onclick="sortTable(3)">Profissional <i class="fas fa-sort"></i></th>
               <th onclick="sortTable(4)" class="text-center">1ª Consulta <i class="fas fa-sort"></i></th>
               <th onclick="sortTable(5)" class="text-center">Retorno <i class="fas fa-sort"></i></th>
-              <th onclick="sortTable(6)" class="text-center">Total Geral <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable(6)" class="text-center">Total <i class="fas fa-sort"></i></th>
               <th onclick="sortTable(7)">Operador <i class="fas fa-sort"></i></th>
             </tr>
           </thead>
@@ -223,18 +212,15 @@
           <tfoot id="tableFoot"></tfoot>
         </table>
       </div>
-
       <div class="table-footer">
         <span id="tablePaginationInfo">Mostrando 0 registros</span>
         <div class="pagination" id="pagination"></div>
       </div>
     </section>
-
   </main>
 
-  <!-- ===================== FOOTER ===================== -->
   <footer class="footer">
-    <p>Diretoria de Regulação do Acesso – Prefeitura Municipal de Contagem | Desenvolvido por Ana P. A. Silva – Matric. 201704</p>
+    <p>Diretoria de Regulação do Acesso – Prefeitura Municipal de Contagem</p>
     <p id="lastUpdate">Última atualização: –</p>
   </footer>
 
