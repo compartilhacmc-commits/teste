@@ -1402,7 +1402,15 @@ function renderChartAbsenteismoMensal() {
     map[key].total++;
     if (r.situacao === 'FAL') map[key].fal++;
   });
-  const sortedKeys = Object.keys(map).sort();
+  const mesesOrdenados = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const sortedKeys = Object.keys(map).sort((a, b) => {
+    const [mesA, anoA] = a.split('/');
+    const [mesB, anoB] = b.split('/');
+    const indexMesA = mesesOrdenados.indexOf(mesA);
+    const indexMesB = mesesOrdenados.indexOf(mesB);
+    if (anoA !== anoB) return parseInt(anoA) - parseInt(anoB);
+    return indexMesA - indexMesB;
+  });
   const labels = sortedKeys;
   const data = sortedKeys.map(k => map[k].total > 0 ? parseFloat((map[k].fal / map[k].total * 100).toFixed(1)) : 0);
   destroyChart(chartAbsenteismoMensal);
@@ -1545,7 +1553,15 @@ function renderChartCancelamentosMensal() {
     map[key].total++;
     if (r.situacao === 'CAN') map[key].can++;
   });
-  const sortedKeys = Object.keys(map).sort();
+  const mesesOrdenados = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const sortedKeys = Object.keys(map).sort((a, b) => {
+    const [mesA, anoA] = a.split('/');
+    const [mesB, anoB] = b.split('/');
+    const indexMesA = mesesOrdenados.indexOf(mesA);
+    const indexMesB = mesesOrdenados.indexOf(mesB);
+    if (anoA !== anoB) return parseInt(anoA) - parseInt(anoB);
+    return indexMesA - indexMesB;
+  });
   const labels = sortedKeys;
   const data = sortedKeys.map(k => map[k].total > 0 ? map[k].can : 0);
   destroyChart(chartCancelamentosMensal);
@@ -1635,7 +1651,15 @@ function renderChartRecepcionadosMensal() {
     if (!map[key]) map[key] = 0;
     if (r.situacao === 'REC') map[key]++;
   });
-  const sortedKeys = Object.keys(map).sort();
+  const mesesOrdenados = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const sortedKeys = Object.keys(map).sort((a, b) => {
+    const [mesA, anoA] = a.split('/');
+    const [mesB, anoB] = b.split('/');
+    const indexMesA = mesesOrdenados.indexOf(mesA);
+    const indexMesB = mesesOrdenados.indexOf(mesB);
+    if (anoA !== anoB) return parseInt(anoA) - parseInt(anoB);
+    return indexMesA - indexMesB;
+  });
   const labels = sortedKeys;
   const data = sortedKeys.map(k => map[k]);
   destroyChart(chartRecepcionadosMensal);
@@ -1725,7 +1749,15 @@ function renderChartTransferidosMensal() {
     if (!map[key]) map[key] = 0;
     if (r.situacao === 'TRA') map[key]++;
   });
-  const sortedKeys = Object.keys(map).sort();
+  const mesesOrdenados = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const sortedKeys = Object.keys(map).sort((a, b) => {
+    const [mesA, anoA] = a.split('/');
+    const [mesB, anoB] = b.split('/');
+    const indexMesA = mesesOrdenados.indexOf(mesA);
+    const indexMesB = mesesOrdenados.indexOf(mesB);
+    if (anoA !== anoB) return parseInt(anoA) - parseInt(anoB);
+    return indexMesA - indexMesB;
+  });
   const labels = sortedKeys;
   const data = sortedKeys.map(k => map[k]);
   destroyChart(chartTransferidosMensal);
