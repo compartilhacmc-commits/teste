@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Telefônico - Diretoria de Regulação do Acesso</title> 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #f5f7fc;
+            padding: 2rem 1rem;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(145deg, #0b2b4a 0%, #1a3f62 100%);
+            color: white;
+            padding: 2rem 2rem 1.5rem 2rem;
+            border-radius: 28px;
+            box-shadow: 0 12px 28px rgba(0, 20, 40, 0.25);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 280px;
+            height: 280px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            font-size: 2.2rem;
+        }
+
+        .header-sub {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-top: 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 0.9rem;
+        }
+
+        .header-sub .org {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        .header-sub .org strong {
+            opacity: 1;
+            color: #ffd966;
+        }
+
+        .header-sub .dev {
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+        }
+
+        .header-sub .motto {
+            width: 100%;
+            font-style: italic;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        /* ===== SEARCH ===== */
+        .search-wrapper {
+            max-width: 700px;
+            margin: 0 auto 2.5rem auto;
+            background: white;
+            border-radius: 60px;
+            padding: 0.3rem 0.3rem 0.3rem 1.8rem;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            border: 1px solid #e9edf4;
+            transition: box-shadow 0.25s, border-color 0.2s;
+        }
+
+        .search-wrapper:focus-within {
+            box-shadow: 0 8px 24px rgba(0, 70, 150, 0.12);
+            border-color: #1a3f62;
+        }
+
+        .search-wrapper input {
+            border: none;
+            padding: 0.9rem 0;
+            font-size: 1rem;
+            width: 100%;
+            background: transparent;
+            outline: none;
+            color: #1e2a3e;
+        }
+
+        .search-wrapper input::placeholder {
+            color: #9aa6b9;
+            font-weight: 400;
+        }
+
+        .search-wrapper .search-icon {
+            color: #6b7f9a;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .search-wrapper .clear-btn {
+            background: none;
+            border: none;
+            color: #9aa6b9;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0 0.8rem;
+            display: none;
+            transition: color 0.2s;
+        }
+
+        .search-wrapper .clear-btn:hover {
+            color: #1a3f62;
+        }
+
+        .search-wrapper .clear-btn.visible {
+            display: block;
+        }
+
+        /* ===== INFO BADGE ===== */
+        .info-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 2.5rem;
+            padding: 0.8rem 1.5rem;
+            background-color: #f0f4fe;
+            border-radius: 60px;
+            color: #3a4c6b;
+            font-size: 0.9rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .info-badge i {
+            color: #1a3f62;
+            font-size: 1rem;
+        }
+
+        /* ===== CATEGORIAS ===== */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.8rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ===== CARD CATEGORIA ===== */
+        .category-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
+            border: 1px solid #edf0f7;
+            transition: transform 0.2s, box-shadow 0.25s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 32px rgba(0, 20, 40, 0.08);
+            border-color: #d4dceb;
+        }
+
+        .category-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 0.8rem;
+        }
+
+        .category-card .card-icon {
+            width: 48px;
+            height: 48px;
+            background: #f0f4fe;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #1a3f62;
+            flex-shrink: 0;
+        }
+
+        .category-card .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0b2b4a;
+            flex: 1;
+        }
+
+        .category-card .card-count {
+            font-size: 0.85rem;
+            color: #6b7f9a;
+            font-weight: 500;
+        }
+
+        .category-card .card-count i {
+            color: #1a3f62;
+            margin-right: 4px;
+        }
+
+        .category-card .card-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #edf0f7;
+        }
+
+        .category-card .card-preview span {
+            background: #f2f6fd;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #1a3f62;
+            font-weight: 500;
+        }
+
+        .category-card .card-arrow {
+            color: #c0c8d8;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            margin-left: auto;
+        }
+
+        .category-card:hover .card-arrow {
+            transform: translateX(4px);
+            color: #1a3f62;
+        }
+
+        /* ===== SEÇÃO DE TELEFONES ===== */
+        .phones-section {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .phones-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .phones-section .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px solid #1a3f62;
+        }
+
+        .phones-section .section-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0b2b4a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phones-section .section-header h2 i {
+            color: #1a3f62;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 2px solid #e9edf4;
+            color: #3a4c6b;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: #1a3f62;
+            background: #f0f4fe;
+            transform: translateX(-4px);
+        }
+
+        .phones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.2rem;
+        }
+
+        /* ===== CARD DE TELEFONE ===== */
+        .phone-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #edf0f7;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .phone-card:hover {
+            transform: translateX(4px);
+            border-color: #d4dceb;
+            box-shadow: 0 4px 12px rgba(0, 20, 40, 0.06);
+        }
+
+        .phone-card .phone-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f4fe;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a3f62;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .phone-card .phone-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .phone-card .phone-info .name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #0b2b4a;
+        }
+
+        .phone-card .phone-info .number {
+            font-size: 0.9rem;
+            color: #1a3f62;
+            font-weight: 500;
+        }
+
+        .phone-card .phone-info .number a {
+            color: #1a3f62;
+            text-decoration: none;
+        }
+
+        .phone-card .phone-info .number a:hover {
+            text-decoration: underline;
+        }
+
+        .phone-card .phone-info .obs {
+            font-size: 0.8rem;
+            color: #6b7f9a;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .phone-card .copy-btn {
+            color: #c0c8d8;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .phone-card .copy-btn:hover {
+            color: #1a3f62;
+            background: #f0f4fe;
+        }
+
+        .phone-card .copy-btn.copied {
+            color: #28a745;
+        }
+
+        /* ===== NO RESULTS ===== */
+        .no-results {
+            text-align: center;
+            padding: 4rem 0;
+            color: #3a4c6b;
+            background: #f0f4fe;
+            border-radius: 60px;
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            color: #c0c8d8;
+            margin-bottom: 1rem;
+        }
+
+        .no-results h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results p {
+            color: #6b7f9a;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .header-sub {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .categories-grid,
+            .phones-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 1.5rem;
+            }
+            .search-wrapper {
+                flex-wrap: wrap;
+                background: transparent;
+                box-shadow: none;
+                padding: 0;
+                gap: 0.6rem;
+            }
+            .search-wrapper input {
+                background: white;
+                padding: 0.9rem 1.5rem;
+                border-radius: 60px;
+                border: 1px solid #dde3ed;
+            }
+            .search-wrapper .clear-btn {
+                padding: 0 0.5rem;
+            }
+            .phone-card {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+    <h1>
+        <i class="fas fa-phone-alt"></i>
+        Guia Telefônico - Diretoria de Regulação do Acesso
+    </h1>
+    <div class="header-sub">
+        <div class="org">
+            <strong>Diretoria de Regulação do Acesso</strong><br>
+            Superintendente: Yara Ariane M.S.Souza<br>
+            Diretora: Paloma Morais
+        </div>
+        <div class="dev">
+            Desenvolvido por Ana P. A. Silva — Matric. 201704
+        </div>
+        <div class="motto">
+            “Nenhum de nós é tão bom quanto todos nós juntos!”
+        </div>
+    </div>
+</header>
+
+<!-- ===== SEARCH ===== -->
+<div class="search-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Pesquisar categorias, setores ou telefones..." autofocus />
+    <button class="clear-btn" id="clearBtn" aria-label="Limpar busca">✕</button>
+</div>
+
+<!-- ===== INFO BADGE ===== -->
+<div class="info-badge">
+    <i class="fas fa-info-circle"></i>
+    <span>Mostrando <strong id="visibleCount">0</strong> de <strong id="totalCount">0</strong> categorias</span>
+</div>
+
+<!-- ===== CATEGORIAS ===== -->
+<div class="categories-grid" id="categoriesContainer">
+    <!-- 1 - CEAPS -->
+    <div class="category-card" data-category="ceaps alto custo">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-capsules"></i></div>
+            <div class="card-title">CEAPS / Alto Custo</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 3 telefones</div>
+        <div class="card-preview">
+            <span>Alto Custo</span>
+            <span>Oncologia</span>
+            <span>Cirurgia Eletiva</span>
+        </div>
+    </div>
+
+    <!-- 2 - CMC -->
+    <div class="category-card" data-category="cmc central marcação consultas">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="card-title">CMC - Marcação de Consultas</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 12 telefones</div>
+        <div class="card-preview">
+            <span>Eldorado</span>
+            <span>Industrial</span>
+            <span>Ressaca</span>
+            <span>Sede</span>
+        </div>
+    </div>
+
+    <!-- 3 - Diversos -->
+    <div class="category-card" data-category="diversos cce caps samu ouvidoria">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-address-book"></i></div>
+            <div class="card-title">Contatos Diversos</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 26 telefones</div>
+        <div class="card-preview">
+            <span>CCE</span>
+            <span>Caps</span>
+            <span>SAMU</span>
+            <span>Ouvidoria</span>
+        </div>
+    </div>
+
+    <!-- 4 - CCE Iria Diniz -->
+    <div class="category-card" data-category="cce iria diniz">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-hospital-alt"></i></div>
+            <div class="card-title">CCE Iria Diniz</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 25 telefones</div>
+        <div class="card-preview">
+            <span>Administração</span>
+            <span>Direção</span>
+            <span>DST</span>
+            <span>Enfermagem</span>
+        </div>
+    </div>
+
+    <!-- 5 - Distritos -->
+    <div class="category-card" data-category="distritos sanitários">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="card-title">Distritos Sanitários</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 8 distritos</div>
+        <div class="card-preview">
+            <span>Eldorado</span>
+            <span>Industrial</span>
+            <span>Nacional</span>
+            <span>Ressaca</span>
+        </div>
+    </div>
+
+    <!-- 6 - UBS + USF -->
+    <div class="category-card" data-category="ubs unidades básicas saúde">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-hospital"></i></div>
+            <div class="card-title">UBS + USF - Unidades Básicas</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 70+ unidades</div>
+        <div class="card-preview">
+            <span>Eldorado</span>
+            <span>Industrial</span>
+            <span>Ressaca</span>
+            <span>Vargem</span>
+            <span>Petrolândia</span>
+        </div>
+    </div>
+
+    <!-- 7 - UPAs -->
+    <div class="category-card" data-category="upas pronto atendimento urgência">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-ambulance"></i></div>
+            <div class="card-title">UPAs - Pronto Atendimento</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 6 unidades</div>
+        <div class="card-preview">
+            <span>UPA JK</span>
+            <span>Industrial</span>
+            <span>Ressaca</span>
+            <span>24h</span>
+        </div>
+    </div>
+
+    <!-- 8 - Contatos Gerais -->
+    <div class="category-card" data-category="contatos telefônicos geral diretoria">
+        <div class="card-header">
+            <div class="card-icon"><i class="fas fa-phone"></i></div>
+            <div class="card-title">Contatos Telefônicos Geral</div>
+            <div class="card-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="card-count"><i class="fas fa-phone"></i> 21 telefones</div>
+        <div class="card-preview">
+            <span>Administrativo</span>
+            <span>Médico</span>
+            <span>Apoio</span>
+            <span>Diretoria</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SEÇÃO DE TELEFONES ===== -->
+<div class="phones-section" id="phonesSection">
+    <div class="section-header">
+        <button class="back-btn" id="backBtn">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+        <h2 id="sectionTitle">
+            <i class="fas fa-phone"></i>
+            <span id="sectionTitleText">Telefones</span>
+        </h2>
+    </div>
+    <div class="phones-grid" id="phonesGrid"></div>
+</div>
+
+<!-- ===== NO RESULTS ===== -->
+<div class="no-results" id="noResults">
+    <i class="fas fa-search"></i>
+    <h3>Nenhum resultado encontrado</h3>
+    <p>Tente buscar por outro termo</p>
+</div>
+
+<script>
+    // ============================================================
+    // DADOS COMPLETOS - TODOS OS TELEFONES
+    // ============================================================
+    const dados = {
+        'ceaps': {
+            titulo: 'CEAPS / Alto Custo',
+            icon: 'fa-capsules',
+            telefones: [
+                { nome: 'Alto Custo', telefone: '3198-6752 / 3198-6753', obs: 'ceapsdr@gmail.com' },
+                { nome: 'Oncologia', telefone: '3199257-0767 / 3198-6757', obs: 'Neide Lizardo / Marcilene Rodrigues' },
+                { nome: 'Cirurgia Eletiva', telefone: '3198-6754 / 3198-6755', obs: 'cecontagem@gmail.com' }
+            ]
+        },
+        'cmc': {
+            titulo: 'CMC - Central de Marcação de Consultas',
+            icon: 'fa-calendar-check',
+            telefones: [
+                { nome: 'Referência do Setor', telefone: '3198-6774', obs: 'Enfermeira Giovanna' },
+                { nome: 'Páginas, Painéis, Consolidados', telefone: '3198-6774', obs: 'Adm. Ana - compartilhacmc@gmail.com' },
+                { nome: 'Belo Horizonte', telefone: '3198-6774', obs: 'Enf. Erika, Adm. Eliane, Adm. Juliana' },
+                { nome: 'Distrito Eldorado', telefone: '3198-6768', obs: 'Adm. Cristina - cmceldorado@gmail.com' },
+                { nome: 'Distrito Petrolândia', telefone: '3198-6779', obs: 'Adm. Erika - cmcpetrolandia@gmail.com' },
+                { nome: 'Distrito Nacional', telefone: '3198-6766', obs: 'Adm. Daniela - cmcnacionalcontagem@gmail.com' },
+                { nome: 'Distrito Industrial', telefone: '3198-6773', obs: 'Adm. Magali - cmcindustrialcontagem@gmail.com' },
+                { nome: 'Distrito Riacho', telefone: '3198-6769', obs: 'Adm. Rosangêla - marcacaodistritoriacho@gmail.com' },
+                { nome: 'Distrito Vargem das Flores', telefone: '3198-6758', obs: 'Adm. Carolina - cmcvargemdasflores@gmail.com' },
+                { nome: 'Distrito Sede', telefone: '3198-6756', obs: 'Adm. Ariana - sedemarcacao@gmail.com' },
+                { nome: 'Distrito Ressaca', telefone: '3198-6772', obs: 'Adm. Graziele - cmcressaca@gmail.com' },
+                { nome: 'SAE / ITR', telefone: '3198-6769', obs: 'Adm. Natalia' }
+            ]
+        },
+        'diversos': {
+            titulo: 'Contatos Telefônicos Diversos',
+            icon: 'fa-address-book',
+            telefones: [
+                { nome: 'Almoxarifado', telefone: '9462 / 1876 / 5336', obs: '' },
+                { nome: 'CAF', telefone: '5864 / 3354-8772', obs: 'Renata' },
+                { nome: 'Caps Ad', telefone: '3398-7378 / (31) 3391-9922', obs: 'Rua Servilha, 110 - Santa Cruz' },
+                { nome: 'Caps Adulto / CAPS III', telefone: '3355-1558 / (31) 3391-1558', obs: 'Rua Madre Marguerita Fontaneresse, 106 - Eldorado' },
+                { nome: 'Caps I / CAPSi', telefone: '3352-5350 / 3356-3307 / (31) 3391-1927', obs: 'R. Livorno, 96 / Rua Urucuri, 130' },
+                { nome: 'Casa Da Família', telefone: '3911-6774', obs: '' },
+                { nome: 'CCE Flores Do Iria', telefone: '3058-2787', obs: '' },
+                { nome: 'CCE Iria Diniz Agendas', telefone: '3058-2790 / 99257-2044', obs: '' },
+                { nome: 'CCE Iria Diniz Recepção', telefone: '3058-2704', obs: '' },
+                { nome: 'CCE Ressaca', telefone: '3394-1345 / 7213', obs: 'ARLETE - 7834' },
+                { nome: 'Centro de Convivência', telefone: '(31) 3391-5350', obs: 'Rua Livorno, 96 - Santa Cruz' },
+                { nome: 'CEO', telefone: '3398-7182 / 3398-5910', obs: 'LUCILENE - 7168' },
+                { nome: 'CER IV', telefone: '3356-6909 / 3356-6901 / 3392-6251 / 3356-6953', obs: '' },
+                { nome: 'CEREST', telefone: '3351-6130 / 3363-6290 / 9-92570569', obs: 'MARLI - Av. Pedro Olimpio da Fonseca, 545' },
+                { nome: 'SAE - Infecto Infantil', telefone: '3058-1597', obs: '' },
+                { nome: 'CISMEP Sabrina', telefone: '3512-4434', obs: '' },
+                { nome: 'Comissão Oncológica', telefone: '3277-5365', obs: '' },
+                { nome: 'CRAS', telefone: '3911-6774', obs: 'R. Senegal, 229' },
+                { nome: 'Guarda Municipal', telefone: '153 - BARRETO', obs: '' },
+                { nome: 'Guarda Municipal', telefone: '3398-3051', obs: 'Região Água Branca' },
+                { nome: 'Hospital Municipal', telefone: '3352-8824', obs: 'JULIANA E GEDEON - 9603' },
+                { nome: 'ITR', telefone: '3395-5359', obs: 'Rua Reginaldo de Souza Lima Nº 500 - Bernardo Monteiro' },
+                { nome: 'Laboratório', telefone: '3356-6715', obs: 'Av. José Faria da Rocha, 1986' },
+                { nome: 'Medwork – Medicina Do Trabalho', telefone: '3398-6763 / 3291-8686', obs: 'Av. José Faria da Rocha, 1986' },
+                { nome: 'Ouvidoria', telefone: '3472-6274 / 6275 / 0800 283 2947', obs: 'JOÃO - 6367' },
+                { nome: 'SAMU', telefone: '3391-1565', obs: 'PATRICIA - 1840' }
+            ]
+        },
+        'cce_iria': {
+            titulo: 'CCE Iria Diniz',
+            icon: 'fa-hospital-alt',
+            telefones: [
+                { nome: 'Administração', telefone: '(31) 3198-7356', obs: '' },
+                { nome: 'Arquivo / Same', telefone: '(31) 3198-7357', obs: '' },
+                { nome: 'Guarita', telefone: '(31) 3198-7358', obs: '' },
+                { nome: 'Almoxarifado', telefone: '(31) 3198-7360', obs: '' },
+                { nome: 'Recursos Humanos (RH)', telefone: '(31) 3198-7359', obs: '' },
+                { nome: 'Guichê', telefone: '(31) 3198-7371', obs: '' },
+                { nome: 'Diretora Geral', telefone: '(31) 3198-7362', obs: 'Aliny' },
+                { nome: 'Diretor Técnico', telefone: '(31) 3198-7352', obs: 'Célio Elias' },
+                { nome: 'DST - Coordenação', telefone: '(31) 3198-7375', obs: 'Coordenador Paulo' },
+                { nome: 'DST / ADT', telefone: '(31) 3198-7363', obs: '' },
+                { nome: 'DST / CTA', telefone: '(31) 3198-7353', obs: '' },
+                { nome: 'DST / CTA', telefone: '(31) 3198-7365', obs: '' },
+                { nome: 'DST / SAE / Farmácia', telefone: '(31) 3198-7372', obs: '' },
+                { nome: 'DST / SAE Recepção', telefone: '(31) 3198-7366', obs: '' },
+                { nome: 'DST / Serviço Social', telefone: '(31) 3198-7364', obs: '' },
+                { nome: 'Enfermagem', telefone: '(31) 3198-7367', obs: '' },
+                { nome: 'Enfermagem / SAE', telefone: '(31) 3198-7374', obs: '' },
+                { nome: 'Epidemiologia', telefone: '(31) 3198-7369', obs: '' },
+                { nome: 'Oftalmologia', telefone: '(31) 3198-7354', obs: '' },
+                { nome: 'Reabilitação', telefone: '(31) 3198-7368', obs: '' },
+                { nome: 'Reabilitação / Serv. Social', telefone: '(31) 3198-7351', obs: '' },
+                { nome: 'Assistência Social', telefone: '(31) 3198-7361', obs: '' },
+                { nome: 'Flores do Iria / PNAR', telefone: '(31) 3198-7373', obs: '' },
+                { nome: 'Lacen (Laboratório)', telefone: '(31) 3198-7376', obs: '' },
+                { nome: 'Oxigenoterapia', telefone: '(31) 3198-7370', obs: '' }
+            ]
+        },
+        'distritos': {
+            titulo: 'Distritos Sanitários',
+            icon: 'fa-map-marked-alt',
+            telefones: [
+                { nome: 'Distrito Eldorado', telefone: '3352-5406 / 3352-5407 / 3352-5408', obs: 'marcacaodistritoeldorado@gmail.com' },
+                { nome: 'Distrito Industrial', telefone: '3363-6045 / 3363-6046', obs: 'distritoindustrial@contagem.mg.gov.br' },
+                { nome: 'Distrito Nacional', telefone: '3397-0300 / 3397-0301', obs: 'distrito.nacional@contagem.mg.gov.br' },
+                { nome: 'Distrito Petrolândia', telefone: '3397-7836 / 3352-5267', obs: 'distrito.petrolandia@contagem.mg.gov.br' },
+                { nome: 'Distrito Ressaca', telefone: '3397-0320 / 3397-0321', obs: 'distrito.ressaca@contagem.mg.gov.br' },
+                { nome: 'Distrito Riacho', telefone: '3397-0330 / 3397-0331', obs: 'gc.distritoriacho@gmail.com' },
+                { nome: 'Distrito Sede', telefone: '3397-0340 / 3397-0341', obs: 'marcacao64e65@outlook.com' },
+                { nome: 'Distrito Vargem das Flores', telefone: '3397-0306 / 3397-0307', obs: 'distrito.vargemdasflores@contagem.mg.gov.br' }
+            ]
+        },
+        'ubs': {
+            titulo: 'UBS + USF - Unidades Básicas de Saúde',
+            icon: 'fa-hospital',
+            telefones: [
+                // ===== ELDORADO =====
+                { nome: 'Distrito Sanitário Eldorado', telefone: '3392-2137 / ZOONOSES 3392-2211 / EPIDEMIO 3392-2175 / 2151 / ADM GC ADRIANA 3356-6270', obs: 'marcacaodistritoeldorado@gmail.com' },
+                { nome: 'UBS CSU Eldorado', telefone: '5548 / 3352-5251 / 3392-2171 / 3353-3548 / 3911-4748', obs: 'marcacaocsu@gmail.com' },
+                { nome: 'UBS Água Branca', telefone: '3394-8059 / 3352-5245 / 3394-8574', obs: 'ubsaguabranca@gmail.com' },
+                { nome: 'UBS Jardim Bandeirantes', telefone: '3352-5248 / 3353-2401 / 2410', obs: 'marcacaoadm@gmail.com' },
+                { nome: 'UBS Novo Eldorado', telefone: '3472-6397 / 3363-5736', obs: 'marcacaonovoeldorado@gmail.com' },
+                { nome: 'UBS Santa Cruz', telefone: '3911-9423 / 3911-9460 / (99257-1809 Institucional)', obs: 'marcacaosantacruz@gmail.com' },
+                { nome: 'UBS Unidade XV', telefone: '3356-1214 / 3352-5271', obs: 'cmcusfxv@gmail.com' },
+                { nome: 'USF Parque São João I (USF 73)', telefone: '3352-5259 / 3911-4852 / 3352-2058 / ODONTO 3352-5846', obs: 'marcacaopsaojoao@gmail.com' },
+                { nome: 'USF Parque São João II (USF 76)', telefone: '3352-5259 / 3911-4852 / 3352-2058 / ODONTO 3352-5846', obs: 'marcacaopsaojoao@gmail.com' },
+                { nome: 'USF Parque São João III (USF 85)', telefone: '3352-5259 / 3911-4852 / 3352-2058 / ODONTO 3352-5846', obs: 'marcacaopsaojoao@gmail.com' },
+                { nome: 'USF Jardim Eldorado I (USF 74)', telefone: '3351-6735 / 3352-5254', obs: 'usfjardimeldorado@gmail.com' },
+                { nome: 'USF Jardim Eldorado II (USF 75)', telefone: '3351-6735 / 3352-5254', obs: 'usfjardimeldorado@gmail.com' },
+                { nome: 'USF Perobas', telefone: '3912-4620 / (99257-1805 Institucional)', obs: 'perobas70@gmail.com' },
+                { nome: 'USF Bela Vista (USF 68)', telefone: '3352-2545', obs: 'marcacaousfbelavista@gmail.com' },
+                // ===== INDUSTRIAL =====
+                { nome: 'Diretoria do Distrito Industrial', telefone: '3363-5791 / 3363-6290 / 3363-6092 / 3363-8880 / 3363-5673 / 3363-3882 / 3361-1117', obs: 'distritoindustrial@contagem.mg.gov.br' },
+                { nome: 'UBS Amazonas', telefone: '99257-0872 / 3363-3420', obs: 'marcacaoubsamazonas@gmail.com' },
+                { nome: 'UBS Bandeirantes', telefone: '99257-0115', obs: 'ubsbandeirantes.agendamento@gmail.com' },
+                { nome: 'UBS Industrial III', telefone: '3385-5998', obs: 'ubsindustrial3@gmail.com' },
+                { nome: 'UBS Jardim Industrial', telefone: '3363-7140', obs: 'jardimindustrial.agendamento@gmail.com' },
+                { nome: 'UBS João Evangelista', telefone: '99257-2502', obs: 'ubsjoaoevangelista@gmail.com' },
+                { nome: 'UBS Vila Diniz', telefone: '3363-5842', obs: 'marcacaoviladinizcontagem@gmail.com' },
+                { nome: 'UBS Vila São Paulo', telefone: '3363-5821', obs: 'ubsvilasaopaulo2025@gmail.com' },
+                // ===== RESSACA =====
+                { nome: 'Distrito Ressaca', telefone: '3354-6367 / 3354-6221 / 3354-6220 / 3352-5703 / 3354-5215 / 3354-5247 / 3354-5419 / 3354-6317 / 3354-6386', obs: 'distrito.ressaca@contagem.mg.gov.br' },
+                { nome: 'UBS Arpoador', telefone: '3352-5762 / 3351-8923', obs: 'ubs.arpoador@contagem.mg.gov.br' },
+                { nome: 'UBS Colorado', telefone: '3393-7338 / 3352-5862 / 3394-3790', obs: 'ubs.colorado@contagem.mg.gov.br' },
+                { nome: 'UBS Campina Verde', telefone: '3352-5706', obs: 'ubs.campinaverde@contagem.mg.gov.br' },
+                { nome: 'UBS Laguna', telefone: '3352-5718 / 3354-6362 / 3394-9518', obs: 'ubs.laguna@contagem.mg.gov.br' },
+                { nome: 'UBS Morada Nova', telefone: '3352-5256', obs: 'ubs.moradanova@contagem.mg.gov.br' },
+                { nome: 'UBS Novo Boa Vista', telefone: '3352-5699', obs: 'ubs.novoboavista@contagem.mg.gov.br' },
+                { nome: 'UBS Novo Progresso II', telefone: '3352-5243', obs: 'ubsnovoprogresso2@contagem.mg.gov.br' },
+                { nome: 'UBS Oitis', telefone: '3352-5814 / 3912-7987', obs: 'ubs.oitis@contagem.mg.gov.br' },
+                { nome: 'UBS Parque Turista', telefone: '3352-5693 / 3354-8882', obs: 'ubs.parqueturista@contagem.mg.gov.br' },
+                { nome: 'UBS Presidente Kennedy', telefone: '3352-5761', obs: 'ubs.presidentekennedy@contagem.mg.gov.br' },
+                { nome: 'UBS Vila Pérola', telefone: '3393-7020 / 3352-5818 / 3352-5757', obs: 'ubs.vilaperola@contagem.mg.gov.br' },
+                { nome: 'UBS São Joaquim', telefone: '3357-9671 / 3357-4761 / 5723', obs: 'ubs.saojoaquim@contagem.mg.gov.br' },
+                // ===== NACIONAL =====
+                { nome: 'Distrito Sanitário Nacional', telefone: '3352-5720 / 3352-5863 / 3737-7464 / 3354-4680 / 3397-3739 / 3913-6324', obs: 'distrito.nacional@contagem.mg.gov.br' },
+                { nome: 'UBS Joaquim Murtinho', telefone: '3397-1856 / 3352-5747 / 3352-5702', obs: 'ubs.joaquimmurtinho@contagem.mg.gov.br' },
+                { nome: 'UBS Nacional', telefone: '3913-6175 / 3397-2297 / 3397-1940', obs: 'ubs.nacional@contagem.mg.gov.br' },
+                { nome: 'UBS Amendoeiras', telefone: '3397-3516', obs: 'ubs.amendoeiras@contagem.mg.gov.br' },
+                { nome: 'UBS Ilda Eugênia', telefone: '3912-7380 / 3913-8542', obs: 'ubs.ildaefigenia@contagem.mg.gov.br' },
+                { nome: 'UBS Tijuco', telefone: '3352-5609 / 3397-4402', obs: 'ubs.tijuca@contagem.mg.gov.br' },
+                { nome: 'UBS Estrela Dalva', telefone: '3913-3622 / 3397-3634', obs: 'ubs.estreladalva@contagem.mg.gov.br' },
+                { nome: 'UBS Xangrilá', telefone: '3352-5824 / 3354-8772', obs: 'ubs.xangrila@contagem.mg.gov.br' },
+                // ===== VARGEM DAS FLORES =====
+                { nome: 'Distrito Vargem das Flores', telefone: '(31) 3392-9807', obs: 'distrito.vargemdasflores@contagem.mg.gov.br' },
+                { nome: 'USF Retiro', telefone: '3352-5264 / 3392-8646', obs: 'usfretiro1e3@gmail.com' },
+                { nome: 'UBS São Judas Tadeu', telefone: '3392-8047 / 3352-5686 / 8047', obs: 'ubs.saojudastadeu@contagem.mg.gov.br' },
+                { nome: 'UBS Vila Renascer', telefone: '3352-3084 / 3356-1518', obs: 'vilarenascerpsf@gmail.com' },
+                { nome: 'UBS Vila Soledade', telefone: '3352-5655 / 3352-5707', obs: 'psfvilasoledade1e2@gmail.com' },
+                { nome: 'UBS Ipê Amarelo', telefone: '3911-6291 / 8455', obs: 'ipeamarelopsf@gmail.com' },
+                { nome: 'UBS Darcy Ribeiro', telefone: '3911-3953', obs: 'psfdarcyribeiro7152@gmail.com' },
+                { nome: 'UBS Icaivera', telefone: '3352-5307', obs: 'icaiverapsf@gmail.com' },
+                { nome: 'UBS Tupã', telefone: '3914-1146', obs: 'tupapsf@gmail.com' },
+                { nome: 'UBS Liberdade II', telefone: '99257-0211 / 99169-4751', obs: 'postoliberdade2@gmail.com' },
+                { nome: 'Penitenciária Nelson Hungria (enfermagem)', telefone: '2129-9545 Ramal 1431 / 3392-8161', obs: 'distritovargemdasflores@contagem.mg.gov.br / cpnhenfermagem@seguranca.mg.gov.br' },
+                { nome: 'Penitenciária Nelson Hungria (saúde)', telefone: '2129-9545 Ramal 1431 / 3392-8161', obs: 'distritovargemdasflores@contagem.mg.gov.br / saudecpnh@seguranca.mg.gov.br' },
+                { nome: 'Nova Contagem (antiga Nova Contagem II)', telefone: '3356-8195', obs: 'ubsnovacontagem@gmail.com' },
+                { nome: 'Nova Contagem I', telefone: '3352-5258', obs: 'ubsnovacontagem@gmail.com' },
+                { nome: 'UBS Estaleiro', telefone: '3352-5689', obs: 'ubsnovacontagem@gmail.com' },
+                { nome: 'Vila Nova Esperança', telefone: '3352-5688', obs: 'ubsnovacontagem@gmail.com' },
+                // ===== PETROLÂNDIA =====
+                { nome: 'Coordenação Distrito Petrolândia', telefone: '3352-5794 / 3352-5267 / 3397-7834 / 3397-7836', obs: 'distrito.petrolandia@contagem.mg.gov.br' },
+                { nome: 'ESF Campo Alto (Eq. 17)', telefone: '3391-8888', obs: 'ubs.campoaltotropical1@gmail.com' },
+                { nome: 'ESF Tropical I (Eq. 61)', telefone: '3391-8888', obs: 'ubs.campoaltotropical1@gmail.com' },
+                { nome: 'UBS São Luiz I (ESF São Luiz I - Eq 56)', telefone: '3352-3697', obs: 'ubs.saoluiz1@contagem.mg.gov.br' },
+                { nome: 'UBS São Luiz II (ESF São Luiz II - Eq 57)', telefone: '3352-5783', obs: 'ubs.saoluiz2@gmail.com' },
+                { nome: 'UBS Petrolândia (ESF Petrolândia I - Eq 58)', telefone: '3352-4695-353-3926', obs: 'ubs.petrolandia1@contagem.mg.gov.br' },
+                { nome: 'UBS Duque de Caxias (ESF Petrolândia II - Eq 59)', telefone: '3352-6684 / 99257-2430', obs: 'petro2marca@gmail.com' },
+                { nome: 'UBS Duque de Caxias (ESF Petrolândia III - Eq 401)', telefone: '3352-6684 / 99257-2430', obs: 'petro2marca@gmail.com' },
+                { nome: 'UBS Duque de Caxias - ESF Duque de Caxias I', telefone: '3352-6684 / 99257-2430', obs: 'petro2marca@gmail.com' },
+                { nome: 'UBS Sapucaias (ESF Sapucais II - Eq. 87)', telefone: '3352-4673 / 3397-8120 / 99257-2431', obs: 'marcacaosapucaias@gmail.com' },
+                { nome: 'UBS Sapucaias (ESF Sapucais I - Eq 60)', telefone: '3352-4673 / 3397-8120 / 99257-2431', obs: 'marcacaosapucaias@gmail.com' },
+                { nome: 'UBS Tropical II', telefone: '3352-5784 / 99257-1524', obs: 'ubs.tropical2@contagem.mg.gov.br' },
+                { nome: 'ESF Tropical II (Eq 62)', telefone: '3352-5784 / 99257-1524', obs: 'ubs.tropical2@contagem.mg.gov.br' },
+                { nome: 'UBS Nascentes Imperiais (ESF Nascentes Imperiais)', telefone: '3911-3701', obs: 'ubsnascentesimperiais@gmail.com' },
+                { nome: 'UBS Nascentes Imperiais (Eq.400)', telefone: '3911-3701', obs: 'ubsnascentesimperiais@gmail.com' },
+                { nome: 'UBS Estâncias Imperiais (ESF Estâncias Imperiais Eq. 90)', telefone: '3352-8660', obs: 'ubs.estanciasimperiais@contagem.mg.gov.br' },
+                // ===== SEDE =====
+                { nome: 'Distrito Sanitário Sede', telefone: '(31) 3391-1840', obs: 'marcacao64e65@outlook.com' },
+                { nome: 'UBS Centro', telefone: '3397-0340 / 3397-0341', obs: 'ubscentrocad@gmail.com' },
+                { nome: 'UBS Linda Vista', telefone: '3397-0342 / 3397-0343', obs: 'ubslindavista@gmail.com' },
+                { nome: 'UBS Bernardo Monteiro', telefone: '3397-0344 / 3397-0345', obs: 'ubs.bernardo.monteiro@gmail.com' },
+                { nome: 'UBS Alvorada', telefone: 'Sem telefone', obs: 'alvoradapsf@gmail.com' },
+                { nome: 'UBS Funcionários (Eq. 69)', telefone: 'Sem telefone', obs: 'ubsfuncionarios1@gmail.com' },
+                { nome: 'PSF Vila Itália', telefone: 'Sem telefone', obs: 'psfvilaitalia@gmail.com' },
+                { nome: 'UBS Chácaras Novo', telefone: 'Sem telefone', obs: 'ubs.chacaras@contagem.mg.gov.br' },
+                { nome: 'UBS Maria da Conceição', telefone: 'Sem telefone', obs: 'ubsmariadaconceicao@gmail.com' },
+                { nome: 'USF Canadá', telefone: 'Sem telefone', obs: 'psfcanada@yahoo.com / ubs.canada@contagem.mg.gov.br' },
+                { nome: 'UBS Unidade XVI', telefone: 'Sem telefone', obs: 'ubsubssede@gmail.com' },
+                { nome: 'UBS SEDE', telefone: 'Sem telefone', obs: 'ubssede@gmail.com' },
+                { nome: 'UBS Nossa Senhora de Fátima', telefone: '3397-0346 / 3397-0347', obs: '' },
+                { nome: 'UBS Praia', telefone: '3397-0350 / 3397-0351', obs: 'praiamarcacao@gmail.com' },
+                { nome: 'UBS Santa Helena', telefone: '3397-0352 / 3397-0353', obs: '' },
+                { nome: 'UBS São Geraldo', telefone: '3397-0354 / 3397-0355', obs: '' },
+                { nome: 'UBS Vila Rica', telefone: '3397-0319', obs: '' },
+                // ===== RIACHO =====
+                { nome: 'Distrito Sanitário Riacho', telefone: '3911-7179 / 3911-7180', obs: 'gc.distritoriacho@gmail.com' },
+                { nome: 'UBS Monte Castelo', telefone: '3352-5314 / 3246-4900', obs: 'ubsmontecastelo.marcacao@gmail.com' },
+                { nome: 'UBS Novo Riacho', telefone: '3352-5266 / 3396-3605', obs: 'ubsnovoriacho.marcacao@gmail.com' },
+                { nome: 'UBS Durval de Barros I', telefone: '3385-5808', obs: 'ubsdurval1.marcacao@gmail.com' },
+                { nome: 'UBS Flamengo', telefone: '3363-5252 / 3362-1480', obs: 'ubsflamengo.marcacao@gmail.com' },
+                { nome: 'UBS Riacho', telefone: '3911-7161 / 3356-1165', obs: 'ubsriacho.marcacao@gmail.com' },
+                { nome: 'UBS Inconfidentes', telefone: '3364-7068 / 3364-4721', obs: 'ubsinconfidentes.marcacao@gmail.com' }
+            ]
+        },
+        'upas': {
+            titulo: 'UPAs - Unidades de Pronto Atendimento',
+            icon: 'fa-ambulance',
+            telefones: [
+                { nome: 'UPA JK', telefone: '2538-9289 / 3352-5600', obs: 'Av. João César de Oliveira, 780 - Eldorado - 24h' },
+                { nome: 'UPA Industrial', telefone: '3352-2070 / 3363-6045', obs: 'Av. Maria da Glória, 491 - Amazonas - 24h' },
+                { nome: 'UPA Vargem das Flores', telefone: '(31) 2538-9294 / 3397-0312', obs: 'Av. Retiro dos Imigrantes, 80 - Retiro - 24h' },
+                { nome: 'UPA Ressaca', telefone: '(31) 2538-9299 / 3397-0324', obs: 'Praça 21 de Abril - Guanabara - 24h' },
+                { nome: 'UPA Petrolândia', telefone: '3363-6045 / (31) 3352-5312', obs: 'R. Refinária União, 137 - Petrolândia - 24h' },
+                { nome: 'UPA Nacional', telefone: '3397-0300', obs: 'Rua Ametista, 383 - Pedra Azul - 24h' }
+            ]
+        },
+        'contatos_geral': {
+            titulo: 'Contatos Telefônicos Geral',
+            icon: 'fa-phone',
+            telefones: [
+                { nome: 'Guichê', telefone: '3198-6770', obs: '' },
+                { nome: 'Assessoria RH', telefone: '3198-6776', obs: 'patricia.miranda@contagem.mg.gov.br' },
+                { nome: 'Diretoria Coordenação Adm.', telefone: '3198-6751', obs: 'fernanda.almeida@contagem.mg.gov.br' },
+                { nome: 'Diretoria Adm', telefone: '3198-6776', obs: '' },
+                { nome: 'Recepção', telefone: '3198-6750', obs: '' },
+                { nome: 'Diretoria', telefone: '3198-6783', obs: '' },
+                { nome: 'Revisão Adm e Técnica', telefone: '3198-6781', obs: '' },
+                { nome: 'Faturamento', telefone: '3198-6778', obs: 'Aloísio' },
+                { nome: 'Cartão SUS', telefone: '3198-6780', obs: '' },
+                { nome: 'Supervisão Ambulatorial', telefone: '3198-6785', obs: '' },
+                { nome: 'Auditoria', telefone: '3198-6782', obs: '' },
+                { nome: 'Almoxarifado', telefone: '3138-6767', obs: 'Sr. Marcos - marcoreis.48@hotmail.com' },
+                { nome: 'Média Complexidade', telefone: '3198-6759 / 3198-6760 / 3198-6777', obs: 'colonoscopia.contagem@gmail.com' },
+                { nome: 'Colonoscopia', telefone: '3198-6788', obs: 'Livia - colonoscopia.contagem@gmail.com' },
+                { nome: 'Oftalmologia', telefone: '3198-6761 / 3198-6762', obs: 'oftalmologia.contagem@gmail.com' },
+                { nome: 'Reabilitação', telefone: '3198-6763', obs: 'juntareguladora@contagem.mg.gov.br' },
+                { nome: 'TRS (Nefrologia)', telefone: '3198-6765', obs: 'Carlos - contagem.nefrologia@gmail.com' },
+                { nome: 'Químico', telefone: '3198-6785', obs: '' },
+                { nome: 'Malote', telefone: '3198-6775', obs: 'maloteceaps@gmail.com' },
+                { nome: 'Serviço Social / TFD', telefone: '3198-6764', obs: '' },
+                { nome: 'TFD', telefone: '3198-6764', obs: 'tfdfamuc@gmail.com' }
+            ]
+        }
+    };
+
+    // ============================================================
+    // FUNCIONALIDADES
+    // ============================================================
+    const catsContainer = document.getElementById('categoriesContainer');
+    const phonesSection = document.getElementById('phonesSection');
+    const phonesGrid = document.getElementById('phonesGrid');
+    const sectionTitleText = document.getElementById('sectionTitleText');
+    const backBtn = document.getElementById('backBtn');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const visibleCountSpan = document.getElementById('visibleCount');
+    const totalCountSpan = document.getElementById('totalCount');
+    const noResults = document.getElementById('noResults');
+
+    const categoryCards = document.querySelectorAll('.category-card');
+    let currentCategory = null;
+
+    function renderCategorias(filtro = '') {
+        let visiveis = 0;
+        const termo = filtro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        categoryCards.forEach(card => {
+            const dadosCard = card.getAttribute('data-category').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const textoCard = card.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            if (dadosCard.includes(termo) || textoCard.includes(termo)) {
+                card.style.display = '';
+                visiveis++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        visibleCountSpan.textContent = visiveis;
+        totalCountSpan.textContent = categoryCards.length;
+
+        if (visiveis === 0 && !phonesSection.classList.contains('active')) {
+            noResults.classList.add('show');
+        } else {
+            noResults.classList.remove('show');
+        }
+
+        clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+    }
+
+    function mostrarTelefones(chave) {
+        const dadosCat = dados[chave];
+        if (!dadosCat) return;
+
+        currentCategory = chave;
+        sectionTitleText.textContent = dadosCat.titulo;
+        
+        phonesGrid.innerHTML = '';
+        dadosCat.telefones.forEach((tel, i) => {
+            const card = document.createElement('div');
+            card.className = 'phone-card';
+            card.style.animationDelay = `${i * 0.03}s`;
+            
+            const obsHtml = tel.obs ? `<div class="obs"><i class="fas fa-info-circle"></i> ${tel.obs}</div>` : '';
+            const telLimpo = tel.telefone.replace(/\s/g, '').replace(/\//g, '').replace(/-/g, '');
+            
+            card.innerHTML = `
+                <div class="phone-icon">
+                    <i class="fas ${dadosCat.icon}"></i>
+                </div>
+                <div class="phone-info">
+                    <div class="name">${tel.nome}</div>
+                    <div class="number">
+                        <a href="tel:${telLimpo}">${tel.telefone}</a>
+                    </div>
+                    ${obsHtml}
+                </div>
+                <div class="copy-btn" onclick="copiarTelefone(this, '${tel.telefone.replace(/'/g, "\\'")}')" title="Copiar">
+                    <i class="far fa-copy"></i>
+                </div>
+            `;
+            
+            phonesGrid.appendChild(card);
+        });
+
+        catsContainer.style.display = 'none';
+        phonesSection.classList.add('active');
+        document.querySelector('.info-badge').style.display = 'none';
+        noResults.classList.remove('show');
+    }
+
+    function voltar() {
+        catsContainer.style.display = 'grid';
+        phonesSection.classList.remove('active');
+        document.querySelector('.info-badge').style.display = 'flex';
+        currentCategory = null;
+        renderCategorias(searchInput.value);
+    }
+
+    function copiarTelefone(elemento, telefone) {
+        navigator.clipboard.writeText(telefone).then(() => {
+            const icon = elemento.querySelector('i');
+            icon.className = 'fas fa-check';
+            elemento.classList.add('copied');
+            setTimeout(() => {
+                icon.className = 'far fa-copy';
+                elemento.classList.remove('copied');
+            }, 1500);
+        }).catch(() => {
+            const textArea = document.createElement('textarea');
+            textArea.value = telefone;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const icon = elemento.querySelector('i');
+            icon.className = 'fas fa-check';
+            elemento.classList.add('copied');
+            setTimeout(() => {
+                icon.className = 'far fa-copy';
+                elemento.classList.remove('copied');
+            }, 1500);
+        });
+    }
+
+    // Eventos
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const chave = this.getAttribute('data-category');
+            const mapa = {
+                'ceaps alto custo': 'ceaps',
+                'cmc central marcação consultas': 'cmc',
+                'diversos cce caps samu ouvidoria': 'diversos',
+                'cce iria diniz': 'cce_iria',
+                'distritos sanitários': 'distritos',
+                'ubs unidades básicas saúde': 'ubs',
+                'upas pronto atendimento urgência': 'upas',
+                'contatos telefônicos geral diretoria': 'contatos_geral'
+            };
+            const chaveMapeada = mapa[chave] || chave;
+            if (dados[chaveMapeada]) mostrarTelefones(chaveMapeada);
+        });
+    });
+
+    backBtn.addEventListener('click', voltar);
+
+    searchInput.addEventListener('input', function() {
+        if (phonesSection.classList.contains('active')) {
+            const termo = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const cards = phonesGrid.querySelectorAll('.phone-card');
+            let visiveis = 0;
+            
+            cards.forEach(card => {
+                const texto = card.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (texto.includes(termo)) {
+                    card.style.display = '';
+                    visiveis++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            let noResultsPhones = document.getElementById('noResultsPhones');
+            if (visiveis === 0) {
+                if (!noResultsPhones) {
+                    const div = document.createElement('div');
+                    div.id = 'noResultsPhones';
+                    div.className = 'no-results show';
+                    div.style.gridColumn = '1 / -1';
+                    div.innerHTML = `
+                        <i class="fas fa-search"></i>
+                        <h3>Nenhum telefone encontrado</h3>
+                        <p>Tente buscar por outro termo</p>
+                    `;
+                    phonesGrid.appendChild(div);
+                } else {
+                    noResultsPhones.style.display = 'block';
+                }
+            } else if (noResultsPhones) {
+                noResultsPhones.style.display = 'none';
+            }
+            
+            clearBtn.classList.toggle('visible', this.value.length > 0);
+            return;
+        }
+        renderCategorias(this.value);
+    });
+
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        if (phonesSection.classList.contains('active') && currentCategory && dados[currentCategory]) {
+            mostrarTelefones(currentCategory);
+        } else {
+            renderCategorias('');
+        }
+        searchInput.focus();
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            if (phonesSection.classList.contains('active') && currentCategory && dados[currentCategory]) {
+                mostrarTelefones(currentCategory);
+            } else {
+                renderCategorias('');
+            }
+            searchInput.focus();
+        }
+    });
+
+    // Inicializar
+    renderCategorias('');
+</script>
+
+</body>
+</html>
